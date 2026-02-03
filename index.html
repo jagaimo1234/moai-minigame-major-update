@@ -1,0 +1,1977 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Moai Robo — Yogurt Run EX (Final Edition)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1020;
+      --fg: #e6f0ff;
+      --ui: #111827
+    }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: system-ui, -apple-system, Segoe UI, Arial, sans-serif
+    }
+
+    #wrap {
+      display: flex;
+      flex-direction: column;
+      height: 100%
+    }
+
+    #game {
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    canvas {
+      width: 100vw;
+      height: 100vh;
+      image-rendering: pixelated;
+      touch-action: none;
+      background: #000
+    }
+
+    #hud {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #1e1e2e;
+      /* Dark Blue */
+      color: #FFD700;
+      /* Gold */
+      padding: 10px 10px 16px 10px;
+      font-family: 'Press Start 2P', monospace;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-bottom: 2px solid #444;
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.5);
+    }
+
+    #hud-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    #hud-vals {
+      display: flex;
+      justify-content: space-around;
+      font-size: 18px;
+    }
+
+    .hud-val {
+      color: #fff;
+      /* White numbers */
+    }
+
+    #ctrls {
+      position: fixed;
+      bottom: 40px;
+      /* Sitting in the dirt area */
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      padding: 0 20px;
+      gap: 30px;
+      z-index: 10;
+    }
+
+    .big-btn {
+      flex: 1;
+      max-width: 140px;
+      background: linear-gradient(to bottom, #2d3748, #1a202c);
+      color: #e2e8f0;
+      border: 3px solid #4a5568;
+      border-radius: 16px;
+      padding: 20px 0;
+      text-align: center;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 14px;
+      box-shadow: 0 6px 0 #000;
+      user-select: none;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .big-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #000;
+      background: #1a202c;
+      border-color: #63b3ed;
+    }
+
+    .btn:active {
+      background: #374151;
+    }
+
+    #start,
+    #over {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+      /* Increased gap for separation */
+
+      /* Mobile Optimized Background */
+      background: url('title_bg_mobile.jpg') no-repeat center center;
+      background-size: cover;
+
+      z-index: 4;
+      font-family: 'Press Start 2P', monospace;
+    }
+
+    #over {
+      display: none;
+      background: rgba(0, 0, 0, 0.85);
+      /* Slightly transparent black */
+      z-index: 50;
+      /* Ensure on top of HUD */
+    }
+
+    #title-logo {
+      width: 85%;
+      max-width: 500px;
+      height: auto;
+      object-fit: contain;
+      image-rendering: pixelated;
+      margin-bottom: 20px;
+      /* Drop shadow for better visibility against sky/clouds */
+      filter: drop-shadow(4px 4px 0px rgba(0, 0, 0, 0.5));
+    }
+
+    /* REMOVED CSS TITLE LOGO STYLES (Using Image) */
+
+    .retro-text {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 16px;
+      color: #fff;
+      text-shadow: 2px 2px 0 #000;
+      text-transform: uppercase;
+
+      /* Placement: Relative to flex container now */
+      position: static;
+      transform: none;
+      width: auto;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    .blink {
+      animation: blinker 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes blinker {
+      0% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    #copyright {
+      position: absolute;
+      bottom: 20px;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 10px;
+      color: #fff;
+      text-shadow: 2px 2px 0 #000;
+      text-align: center;
+    }
+
+    /* Invisible clickable area for "PUSH START" to maintain touch support */
+    #go-hitbox {
+      cursor: pointer;
+      padding: 20px;
+    }
+
+    #title {
+      /* Legacy support if needed, but we overlay */
+      display: none;
+    }
+
+    .small {
+      font: 10px 'Press Start 2P', monospace;
+      opacity: .9;
+      text-align: center;
+      line-height: 1.6;
+      text-shadow: 1px 1px 0 #000;
+      margin-bottom: 20px;
+    }
+
+    #overTitle {
+      font: 24px 'Press Start 2P', monospace;
+      margin-bottom: 10px;
+      color: #fff;
+      text-shadow: 2px 2px 0 #f00;
+    }
+
+    #mute {
+      position: fixed;
+      top: 8px;
+      right: 8px;
+      z-index: 3;
+      background: #111827;
+      color: #e6f0ff;
+      border: 1px solid #374151;
+      border-radius: 12px;
+      padding: 6px 10px;
+      font: 12px/1 system-ui, monospace
+    }
+  </style>
+</head>
+
+<body>
+  <div id="wrap">
+      <div id="game">
+          <canvas id="cv" width="180" height="320"></canvas>
+        </div>
+
+    <div id="hud">
+      <div id="hud-top">
+        <div class="hud-item">SCORE</div>
+        <div class="hud-item">
+          <span id="lf-hearts">💛💛💛</span> <span id="lf-num">3</span>
+        </div>
+        <div class="hud-item" id="st-display">STAGE 1</div>
+      </div>
+      <div id="hud-vals">
+        <div class="hud-val" id="sc">0</div>
+        <div class="hud-val" id="tg">TIME</div>
+      </div>
+    </div>
+
+      <button id="mute" aria-pressed="false" title="Sound">🔇 音OFF</button>
+
+    <div id="ctrls">
+      <div class="btn big-btn" id="jump">JUMP</div>
+      <div class="btn big-btn" id="shot">SHOT</div>
+    </div>
+
+      <div id="start">
+      <!-- Logo as separate image for better mobile scaling -->
+      <img id="title-logo" src="title_logo.png" alt="MOAI ROBO YOGURT RUN EX">
+
+      <!-- The main interaction button -->
+          <div id="go" class="retro-text blink" style="cursor:pointer; padding:20px;">
+        TAP TO START
+      </div>
+
+      <div id="copyright">
+        © 2025 KANAZAWA MOATARO
+      </div>
+
+      <!-- DEBUG MENU MOVED/HIDDEN BETTER -->
+      <div id="debugMenu"
+        style="display:none; position:absolute; top:120px; left:10px; z-index:20; flex-wrap:wrap; gap:6px;">
+        <div class="btn" style="padding:4px 8px; font-size:10px;" onclick="startDebugGame(0)">1</div>
+        <div class="btn" style="padding:4px 8px; font-size:10px;" onclick="startDebugGame(1)">2</div>
+        <div class="btn" style="padding:4px 8px; font-size:10px;" onclick="startDebugGame(2)">3</div>
+        <div class="btn" style="padding:4px 8px; font-size:10px;" onclick="startDebugGame(3)">4</div>
+        <div class="btn" style="padding:4px 8px; font-size:10px;" onclick="startDebugGame(4)">BOSS</div>
+         
+      </div>
+
+        <div id="over">
+            <div id="overTitle">GAME OVER</div>
+            <div id="scoreline" class="small"></div>
+            <div class="btn" id="retry" style="width:160px;">BACK TO TITLE</div>
+          </div>
+    </div>
+
+    <script>
+      (() => {
+        // ====================================
+        //  CONSTANTS & CONFIG
+        // ====================================
+        // Vertical Layout Update: 360x640
+        // Vertical Layout Update: 180x320 (2.0x Zoom)
+        // Reserve 90px for controls (was 120px in 240w, 180px in 360w)
+        const G = { W: 180, H: 320, GROUND: 320 - 90 };
+        const MAX_LIVES = 10;
+
+        // ステージ設定
+        const STAGES = [
+          // STAGE 1: 朝・出社 (テーマ: 避けられない出社 => Company率が高い)
+          { id: 1, name: 'MORNING', theme: '避けられない出社', target: 300, speed: 1.6, obsRate: 1.2, insectRate: 0.3, taxRate: 0.0, companyRate: 0.7, meetingRate: 0.0, celeryRate: 0.0, anxietyRate: 0.0, workRate: 0.0, workSpawnMin: 0, workSpawnMax: 0 },
+          // STAGE 2: 昼・昼食 (テーマ: 仕事は多くでも時間も進まない。)
+          { id: 2, name: 'NOON', theme: '時の流れは遅い', target: 600, speed: 1.9, obsRate: 1.3, insectRate: 0.3, taxRate: 0.0, companyRate: 0.0, meetingRate: 0.2, celeryRate: 0.3, anxietyRate: 0.0, workRate: 0.5, workSpawnMin: 120, workSpawnMax: 300 },
+          // STAGE 3: 夜 (テーマ: 終わらない一日 => MeetingとWorkがメイン)
+          { id: 3, name: 'NIGHT', theme: '終わらない一日', target: 900, speed: 2.2, obsRate: 1.4, insectRate: 0.3, taxRate: 0.0, companyRate: 0.0, meetingRate: 0.4, celeryRate: 0.0, anxietyRate: 0.0, workRate: 0.7, workSpawnMin: 90, workSpawnMax: 200 },
+          // STAGE 4: 人生・内面 (テーマ: 不安と感情 => Tax, Anxietyがメイン)
+          { id: 4, name: 'INNER', theme: '不安と感情', target: 1200, speed: 2.8, obsRate: 1.5, insectRate: 0.25, taxRate: 0.3, companyRate: 0.0, meetingRate: 0.0, celeryRate: 0.0, anxietyRate: 0.3, workRate: 0.5, workSpawnMin: 180, workSpawnMax: 350 },
+          // STAGE 5: BOSS
+          { id: 5, name: 'BOSS', theme: '決戦', target: Infinity, speed: 2.4, obsRate: 0.0, insectRate: 0.0, taxRate: 0.0, companyRate: 0.0, meetingRate: 0.0, celeryRate: 0.0, anxietyRate: 0.0, workRate: 0.0, workSpawnMin: 0, workSpawnMax: 0, boss: true }
+        ];
+        // ====================================
+        //  SOUND ENGINE (ここを追加)
+        // ====================================
+        const BGM_FREQS = [
+          130.81, 138.59, 146.83, 155.56, 164.81, 174.61, 185.00, 196.00,
+          207.65, 220.00, 233.08, 246.94, 261.63, 277.18, 293.66, 311.13,
+          329.63, 349.23, 369.99, 392.00, 415.30, 440.00, 466.16, 493.88,
+          523.25, 554.37, 587.33, 622.25, 659.25
+        ];
+
+        const STAGE_BGM_DATA = [
+          { melody: [12, 19, 16, 19, 12, 19, 16, 21, 14, 21, 17, 21, 14, 21, 17, 24], base: [0, 0, 5, 5, 7, 7, 0, 0], wave: 'square', tempo: 140, decay: 0.1 },
+          { melody: [16, -1, 19, -1, 17, -1, 16, -1, 12, -1, 14, -1, 11, -1, -1, -1], base: [4, 4, 5, 5, 0, 0, 7, 7], wave: 'triangle', tempo: 90, decay: 0.4 },
+          { melody: [12, 12, 24, -1, 23, 21, 19, -1, 17, 17, 15, 14, 12, -1, 12, -1], base: [0, 3, 5, 7, 0, 3, 5, 10], wave: 'sawtooth', tempo: 120, decay: 0.2 },
+          { melody: [12, 13, 15, 16, 12, 13, 15, 16, 19, 18, 16, 15, 13, 12, 11, 10], base: [0, 1, 3, 4, 0, 1, 3, 4], wave: 'sawtooth', tempo: 110, decay: 0.3, detune: true },
+          { melody: [12, 24, 12, 24, 15, 27, 15, 27, 17, 29, 17, 29, 19, 31, 19, 31], base: [0, 0, 0, 0, 5, 5, 7, 7, 8, 8, 10, 10, 12, 12, 15, 15], wave: 'square', tempo: 170, decay: 0.15, drum: true }
+        ];
+
+        let bgmNoteIndex = 0;
+
+        function playBgmNote(freq, type, vol, decay, detuneValue = 0) {
+          if (muted || freq <= 0) return;
+          try {
+            const c = audioCtx();
+            const now = c.currentTime;
+            const o = c.createOscillator();
+            const g = c.createGain();
+            o.type = type;
+            o.frequency.setValueAtTime(freq, now);
+            if (detuneValue) o.detune.setValueAtTime(detuneValue, now);
+            o.connect(g); g.connect(c.destination);
+            g.gain.setValueAtTime(vol, now);
+            g.gain.exponentialRampToValueAtTime(0.001, now + decay);
+            o.start(now); o.stop(now + decay);
+          } catch (e) { }
+        }
+
+        function playBgmNoise(vol, decay) {
+          if (muted) return;
+          try {
+            const c = audioCtx();
+            const now = c.currentTime;
+            const bufferSize = c.sampleRate * decay;
+            const buffer = c.createBuffer(1, bufferSize, c.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+            const source = c.createBufferSource();
+            source.buffer = buffer;
+            const g = c.createGain();
+            g.gain.setValueAtTime(vol, now);
+            g.gain.exponentialRampToValueAtTime(0.01, now + decay);
+            source.connect(g); g.connect(c.destination);
+            source.start(now); source.stop(now + decay);
+          } catch (e) { }
+        }
+
+        function updateBgmSequencer() {
+          const isBgmState = ['PLAY', 'TITLE', 'CLEAR', 'TRANSITION'].includes(state);
+          if (!isBgmState) { stopBgm(); return; }
+
+          const d = STAGE_BGM_DATA[stageIndex];
+          if (!d) return;
+
+          const stepSec = 60 / d.tempo / 4;
+          const m = d.melody[bgmNoteIndex];
+          if (m !== -1 && m !== undefined) {
+            let det = d.detune ? Math.sin(Date.now() * 0.01) * 50 : 0;
+            playBgmNote(BGM_FREQS[m], d.wave, 0.06, d.decay, det);
+          }
+          if (bgmNoteIndex % 2 === 0) {
+            const b = d.base[(bgmNoteIndex / 2) % d.base.length];
+            if (b !== -1) playBgmNote(BGM_FREQS[b], 'triangle', 0.1, stepSec * 2);
+          }
+          if (d.drum && bgmNoteIndex % 4 === 0) playBgmNoise(0.04, 0.05);
+
+          bgmNoteIndex = (bgmNoteIndex + 1) % d.melody.length;
+          bgmTimer = setTimeout(updateBgmSequencer, stepSec * 1000);
+        }
+
+        function stopBgm() {
+          clearTimeout(bgmTimer);
+          bgmTimer = null;
+          bgmNoteIndex = 0;
+        }
+        // ボス攻撃パターン
+        const BOSS_ATTACKS = ['MoaiThrow_Arc', 'MoaiThrow_Horizontal', 'MoaiThrow_Homing'];
+
+        // ====================================
+        //  CANVAS SETUP (省略)
+        // ====================================
+        const cv = document.getElementById('cv');
+        const ctx = cv.getContext('2d');
+
+        function fitCanvas() {
+          const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+          const scale = Math.floor(Math.min(innerWidth / G.W, innerHeight / G.H) * dpr);
+          cv.width = G.W * scale;
+          cv.height = G.H * scale;
+          cv.style.width = (G.W * scale / dpr) + 'px';
+          cv.style.height = (G.H * scale / dpr) + 'px';
+          ctx.setTransform(scale, 0, 0, scale, 0, 0);
+          ctx.imageSmoothingEnabled = false;
+        }
+        fitCanvas();
+        addEventListener('resize', fitCanvas);
+
+        // ====================================
+        //  IMAGE LOADING
+        // ====================================
+        const moaiImage = new Image();
+        moaiImage.src = 'moai_robo.png';
+        let moaiImageLoaded = false;
+        moaiImage.onload = () => { moaiImageLoaded = true; };
+        moaiImage.onerror = () => { console.error("Error loading moai_robo.png. Check file path."); };
+
+        const authorImage = new Image();
+        authorImage.src = 'boss_author.png';
+        let authorImageLoaded = false;
+        authorImage.onload = () => { authorImageLoaded = true; };
+        authorImage.onerror = () => { console.error("Error loading boss_author.png. Check file path."); };
+
+        const moaiShotImage = new Image();
+        moaiShotImage.src = 'moai_shot.png';
+        let moaiShotImageLoaded = false;
+        moaiShotImage.onload = () => { moaiShotImageLoaded = true; };
+        moaiShotImage.onerror = () => { console.error("Error loading moai_shot.png. Check file path."); };
+
+        const slimeImage = new Image();
+        slimeImage.src = 'enemy_slime.png';
+        let slimeImageLoaded = false;
+        slimeImage.onload = () => { slimeImageLoaded = true; };
+
+        const insectImage = new Image();
+        insectImage.src = 'enemy_insect.png';
+        let insectImageLoaded = false;
+        insectImage.onload = () => { insectImageLoaded = true; };
+
+        const companyImage = new Image();
+        companyImage.src = 'obstacle_company.png';
+        let companyImageLoaded = false;
+        companyImage.onload = () => { companyImageLoaded = true; };
+
+        const meetingImage = new Image();
+        meetingImage.src = 'obstacle_meeting.png';
+        let meetingImageLoaded = false;
+        meetingImage.onload = () => { meetingImageLoaded = true; };
+
+        const celeryImage = new Image();
+        celeryImage.src = 'obstacle_celery.png';
+        let celeryImageLoaded = false;
+        celeryImage.onload = () => { celeryImageLoaded = true; };
+
+        const anxietyImage = new Image();
+        anxietyImage.src = 'obstacle_anxiety.png';
+        let anxietyImageLoaded = false;
+        anxietyImage.onload = () => { anxietyImageLoaded = true; };
+
+        const workImage = new Image();
+        workImage.src = 'obstacle_work.png';
+        let workImageLoaded = false;
+        workImage.onload = () => { workImageLoaded = true; };
+        workImage.onerror = () => { console.warn("Warning: obstacle_work.png not loaded."); };
+
+        // ★ NEW YOGURT SPRITE
+        const yogurtImage = new Image();
+        yogurtImage.src = 'item_yogurt.png';
+        let yogurtImageLoaded = false;
+        yogurtImage.onload = () => { yogurtImageLoaded = true; };
+        yogurtImage.onerror = () => { console.error("Error loading item_yogurt.png."); };
+
+        // ★ NEW BACKGROUND SPRITES
+        const bgSkyImage = new Image();
+        bgSkyImage.src = 'bg_sky.png?v=' + (Date.now() + 100); // Cache Buster
+        let bgSkyImageLoaded = false;
+        bgSkyImage.onload = () => { bgSkyImageLoaded = true; };
+
+        const bgGroundImage = new Image();
+        bgGroundImage.src = 'bg_ground.png?v=' + (Date.now() + 100); // Cache Buster
+        let bgGroundImageLoaded = false;
+        bgGroundImage.onload = () => { bgGroundImageLoaded = true; };
+
+
+        // ====================================
+        //  AUDIO SYSTEM (省略)
+        // ====================================
+        let AC = null;
+        let audioUnlocked = false;
+        let muted = false;
+
+        function audioCtx() {
+          if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+          return AC;
+        }
+
+        ['touchstart', 'mousedown', 'keydown'].forEach(ev => {
+          addEventListener(ev, async () => {
+            try {
+              const c = audioCtx();
+              if (c.state === 'suspended') await c.resume();
+              audioUnlocked = true;
+            } catch (e) { }
+          }, { passive: true });
+        });
+
+        function beep(freq = 440, dur = 0.07, type = 'square', vol = 0.18) {
+          if (muted) return;
+          try {
+            const c = audioCtx();
+            const now = c.currentTime;
+            const o = c.createOscillator();
+            const g = c.createGain();
+            o.type = type;
+            o.frequency.setValueAtTime(freq, now);
+            o.connect(g); g.connect(c.destination);
+            g.gain.setValueAtTime(0.0001, now);
+            g.gain.exponentialRampToValueAtTime(vol, now + 0.005);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+            o.start(now);
+            o.stop(now + dur + 0.05);
+          } catch (e) { }
+        }
+
+        function playFanfare() {
+          if (muted) return;
+          beep(784, 0.1, 'sine', 0.2);
+          setTimeout(() => beep(988, 0.15, 'sine', 0.25), 100);
+          setTimeout(() => beep(1319, 0.3, 'sine', 0.3), 300);
+        }
+
+        const muteBtn = document.getElementById('mute');
+        function updateMuteUI() {
+          // --- 既存の処理 ---
+          muteBtn.textContent = muted ? '🔇 音OFF' : '🔊 音ON';
+          muteBtn.setAttribute('aria-pressed', String(!muted));
+
+          // --- ★ここから BGM連動を追記 ---
+          if (muted) {
+            // ミュートにしたらBGMタイマーを止める
+            if (bgmTimer) {
+              clearTimeout(bgmTimer);
+              bgmTimer = null;
+            }
+          } else {
+            // ミュート解除した時、ゲーム中ならBGMを再開する
+            const isPlaying = ['PLAY', 'TITLE', 'CLEAR', 'TRANSITION'].includes(state);
+            if (!bgmTimer && isPlaying) {
+              updateBgmSequencer();
+            }
+          }
+        }
+        muteBtn.addEventListener('click', () => {
+          muted = !muted;
+          updateMuteUI();
+          if (!muted) beep(660, 0.06, 'square', 0.2);
+        });
+
+
+        function stopBgm() {
+          if (bgmTimer) {
+            clearTimeout(bgmTimer);
+            bgmTimer = null;
+          }
+        }
+
+        // ====================================
+        //  GAME STATE (状態と変数)
+        // ====================================
+        let state = 'START'; // START, PLAY, CLEAR, TRANSITION, TITLE, ENDING, OVER
+        let score = 0;
+        let best = 0;
+        let lives = 10;
+        let t = 0;
+
+        let stageIndex = 0;
+        let currentStage = STAGES[0];
+        let nextStageIndex = 0; // トランジション用
+        let bgmTimer = null; // ★ Defined globally to prevent ReferenceError
+
+        const player = { x: 20, y: G.GROUND, vy: 0, onG: true, bg: 0, speed: 0, bob: 0 };
+        const items = [];
+        const obstacles = [];
+        let itemSpawn = 30;
+        let obstacleSpawn = 60;
+        let workSpawn = 0;
+
+        // Boss 
+        const BOSS_MAX_HP = 100;
+        const boss = {
+          active: false, x: G.W - 30, y: G.GROUND - 40, hp: BOSS_MAX_HP, timer: 0, dir: 1,
+          attackIndex: 0, attackTimer: 180,
+          isCharging: false, beamWidth: 0
+        };
+        const bossShots = [];
+        const bullets = [];
+
+        // Ending (省略)
+        let endScrollY = 0;
+        // ★ CREDITSに秘密のコードの演出行を追加
+        const CREDITS = [
+          "CONGRATULATIONS!", "",
+          "MOAI ROBO - YOGURT RUN EX", "",
+          "--- CAST ---",
+          "Hero: MOAI ROBO",
+          "Villain: THE AUTHOR",
+          "Items: YOGURT, STRAWBERRY MILK", "",
+          "--- SPECIAL THANKS ---",
+          "Kanazawa Moai Project",
+          "AND YOU!", "",
+          "--- 秘密のアクセスコード ---", // 12行目 (Index 11)
+          "YOGURTLOVE", // 13行目 (Index 12)
+          "これは、未来の冒険を解放する鍵です。", // 14行目 (Index 13)
+          "大切に保管してください...", // 15行目 (Index 14)
+          "",
+          "Thank you for playing."
+        ];
+        const SECRET_CODE_START_INDEX = 11; // 停止を開始する行 (--- 秘密のアクセスコード ---)
+        const SECRET_CODE_DURATION = 180; // 停止時間 (3秒)
+
+        // HUD Elements (省略)
+        const scEl = document.getElementById('sc');
+        const lfHeartsEl = document.getElementById('lf-hearts');
+        const lfNumEl = document.getElementById('lf-num');
+        const stDisplayEl = document.getElementById('st-display');
+        const tgEl = document.getElementById('tg');
+        const overEl = document.getElementById('over');
+        const startEl = document.getElementById('start');
+
+        // ====================================
+        //  DRAWING FUNCTIONS
+        // ====================================
+        function drawSky() {
+          const w = G.W;
+          const h = G.H;
+          let grd;
+
+          // --- STAGE 1: MORNING (朝) ---
+
+          if (currentStage.id === 1) {
+            if (bgSkyImageLoaded) {
+              // Sky Parallax (Scrolls slowly)
+              const skyScroll = (t * 0.2) % w;
+              // Draw enough copies to cover width + scroll
+              // Since w is screen width, drawing 2 is enough if image width >= screen width
+              // But if image width < screen width, we need more logic.
+              // Assuming bgSkyImage.width matches G.W (180) for this design.
+              ctx.drawImage(bgSkyImage, 0, 0, bgSkyImage.width, bgSkyImage.height, -skyScroll, 0, w, h);
+              ctx.drawImage(bgSkyImage, 0, 0, bgSkyImage.width, bgSkyImage.height, w - skyScroll, 0, w, h);
+              if (skyScroll > 0) ctx.drawImage(bgSkyImage, 0, 0, bgSkyImage.width, bgSkyImage.height, (w * 2) - skyScroll, 0, w, h);
+            } else {
+              // Fallback gradient
+              grd = ctx.createLinearGradient(0, 0, 0, h);
+              grd.addColorStop(0, '#60A5FA');
+              grd.addColorStop(1, '#E0F2FE');
+              ctx.fillStyle = grd;
+              ctx.fillRect(0, 0, w, h);
+            }
+
+
+            // Parallax Mountains (Far)
+            ctx.fillStyle = '#93C5FD'; // Light Blue
+            const mountSpeed = player.bg * 0.1;
+            ctx.beginPath();
+            ctx.moveTo(0, h);
+            for (let x = 0; x <= w; x += 10) {
+              const mHeight = 30 + Math.sin((x + mountSpeed) * 0.02) * 15;
+              ctx.lineTo(x, h - mHeight);
+            }
+            ctx.lineTo(w, h);
+            ctx.fill();
+
+            // Parallax Mountains (Near)
+            ctx.fillStyle = '#60A5FA'; // Darker Blue
+            const mountSpeed2 = player.bg * 0.2;
+            ctx.beginPath();
+            ctx.moveTo(0, h);
+            for (let x = 0; x <= w; x += 20) {
+              const mHeight = 15 + Math.sin((x + mountSpeed2) * 0.05) * 10;
+              ctx.lineTo(x, h - mHeight);
+            }
+            ctx.lineTo(w, h);
+            ctx.fill();
+          }
+
+          // --- STAGE 2: NOON (昼) ---
+          else if (currentStage.id === 2) {
+            // Sky Gradient
+            grd = ctx.createLinearGradient(0, 0, 0, h);
+            grd.addColorStop(0, '#0EA5E9');
+            grd.addColorStop(1, '#BAE6FD');
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, 0, w, h);
+
+            // Fluffy Clouds
+            ctx.fillStyle = '#FFFFFF';
+            const cloudSpeed = t * 0.1;
+            const clouds = [
+              { x: 50, y: 30, s: 1 }, { x: 200, y: 50, s: 0.8 }, { x: 350, y: 25, s: 1.2 }
+            ];
+            clouds.forEach(c => {
+              const cx = (c.x - cloudSpeed * c.s) % (w + 100);
+              const drawX = cx < -50 ? cx + w + 100 : cx;
+
+              ctx.beginPath();
+              ctx.arc(drawX, c.y, 15 * c.s, 0, Math.PI * 2);
+              ctx.arc(drawX + 15 * c.s, c.y - 5 * c.s, 18 * c.s, 0, Math.PI * 2);
+              ctx.arc(drawX + 30 * c.s, c.y, 15 * c.s, 0, Math.PI * 2);
+              ctx.fill();
+            });
+          }
+
+          // --- STAGE 3: NIGHT (夜) ---
+          else if (currentStage.id === 3) {
+            // Sky Gradient
+            grd = ctx.createLinearGradient(0, 0, 0, h);
+            grd.addColorStop(0, '#020617');
+            grd.addColorStop(1, '#172554');
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, 0, w, h);
+
+            // Moon
+            ctx.fillStyle = '#FEF3C7';
+            ctx.beginPath();
+            ctx.arc(w * 0.15, h * 0.2, 18, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Stars
+            ctx.fillStyle = '#FFFFFF';
+            for (let i = 0; i < 30; i++) {
+              if ((i * 13 + t) % 50 < 25) {
+                const sx = (i * 67) % w;
+                const sy = (i * 93) % (h / 2);
+                ctx.fillRect(sx, sy, 1, 1);
+              }
+            }
+
+            // Cityscape
+            const lightSpeed = player.speed * 0.5;
+            for (let i = 0; i < 8; i++) {
+              let bw = 24 + (i * 6);
+              let bh = 60 + (i * 12);
+              let bx = ((i * 70 + player.bg * lightSpeed * 0.15) % (w + 100)) - 50;
+              if (bx < -bw) bx += w + 100;
+              let by = G.GROUND + 1 - bh;
+
+              // Building Body Gradient
+              let bGrd = ctx.createLinearGradient(0, by, 0, by + bh);
+              bGrd.addColorStop(0, '#1E3A8A');
+              bGrd.addColorStop(1, '#172554');
+              ctx.fillStyle = bGrd;
+              ctx.fillRect(bx, by, bw, bh);
+
+              // Windows
+              ctx.fillStyle = '#FEF3C7'; // Warm Light
+              for (let wX = 4; wX < bw - 4; wX += 6) {
+                for (let wY = 6; wY < bh - 6; wY += 8) {
+                  if (Math.random() > 0.3 || (Math.floor((bx * by * wX * wY + t / 10)) % 10 < 3)) {
+                    ctx.fillRect(bx + wX, by + wY, 3, 5);
+                  }
+                }
+              }
+            }
+          }
+
+          // --- STAGE 4: INNER (内面) ---
+          else if (currentStage.id === 4) {
+            // Anxiety Gradient
+            grd = ctx.createLinearGradient(0, 0, 0, h);
+            grd.addColorStop(0, '#2E1065');
+            grd.addColorStop(1, '#000000');
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, 0, w, h);
+
+            // Vortex / Grid Effect
+            ctx.strokeStyle = 'rgba(168, 85, 247, 0.3)';
+            ctx.lineWidth = 1;
+            const cx = w / 2;
+            const cy = h / 2;
+            const offset = (t * 2) % 20;
+
+            for (let r = 0; r < 200; r += 20) {
+              ctx.beginPath();
+              let radius = r + offset;
+              // Warping circle
+              for (let a = 0; a <= Math.PI * 2; a += 0.1) {
+                let warp = Math.sin(a * 5 + t * 0.05) * 5;
+                let rx = cx + Math.cos(a) * (radius + warp);
+                let ry = cy + Math.sin(a) * (radius + warp);
+                if (a === 0) ctx.moveTo(rx, ry);
+                else ctx.lineTo(rx, ry);
+              }
+              ctx.closePath();
+              ctx.stroke();
+            }
+          }
+
+          // --- STAGE 5: BOSS (決戦) ---
+          else if (currentStage.id === 5) {
+            // Menacing Gradient
+            grd = ctx.createLinearGradient(0, 0, 0, h);
+            grd.addColorStop(0, '#450A0A');
+            grd.addColorStop(1, '#000000');
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, 0, w, h);
+
+            // Lightning (Random Flash)
+            if (Math.random() < 0.02) {
+              ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+              ctx.fillRect(0, 0, w, h);
+            }
+          }
+        }
+
+        function drawGround() {
+          const w = G.W;
+          const h = G.H;
+          const groundY = G.GROUND;
+
+          // ★ STAGE 1 - Pixel Art Ground
+          // ★ STAGE 1 - Pixel Art Ground
+          if (bgGroundImageLoaded && currentStage.id === 1) {
+            const groundH = h - groundY;
+            // Preserving Aspect Ratio:
+            // If the ground height on screen (groundH) differs from image height,
+            // we must scale the width proportionally so pixels remain square.
+            const scale = groundH / bgGroundImage.height;
+            const drawnW = bgGroundImage.width * scale;
+
+            const offset = Math.floor(player.bg % drawnW);
+
+            // Calculate tiles needed based on the SCALED width
+            const tilesNeeded = Math.ceil(w / drawnW) + 1;
+
+            for (let i = 0; i < tilesNeeded; i++) {
+              ctx.drawImage(bgGroundImage, 0, 0, bgGroundImage.width, bgGroundImage.height, (i * drawnW) - offset, groundY, drawnW, groundH);
+            }
+            return;
+          }
+
+          // Ground Side Gradient (Cross-section)
+          let gGrd = ctx.createLinearGradient(0, groundY, 0, h);
+
+          if (currentStage.id <= 2) { // Morning/Noon (Grass/Dirt)
+            gGrd.addColorStop(0, '#5D4037');
+            gGrd.addColorStop(1, '#3E2723');
+          } else if (currentStage.id === 3) { // Night (Concrete)
+            gGrd.addColorStop(0, '#374151');
+            gGrd.addColorStop(1, '#111827');
+          } else if (currentStage.id === 4) { // Inner (Grid/Abstract)
+            gGrd.addColorStop(0, '#4C1D95');
+            gGrd.addColorStop(1, '#2E1065');
+          } else { // Boss (Dark Rock)
+            gGrd.addColorStop(0, '#1F2937');
+            gGrd.addColorStop(1, '#000000');
+          }
+
+          ctx.fillStyle = gGrd;
+          ctx.fillRect(0, groundY, w, h - groundY);
+
+          // Surface Top Border
+          ctx.fillStyle = (currentStage.id <= 2) ? '#65A30D' : '#9CA3AF'; // Bright Grass or Grey Edge
+          if (currentStage.id === 4) ctx.fillStyle = '#8B5CF6'; // Purple Edge
+          if (currentStage.id === 5) ctx.fillStyle = '#DC2626'; // Red Edge
+
+          ctx.fillRect(0, groundY, w, 2);
+
+          // Scrolling Details
+          const speed = player.bg;
+
+          if (currentStage.id <= 2) { // Grass Tufts
+            ctx.fillStyle = '#4D7C0F'; // Darker Grass
+            for (let x = 0; x < w; x += 30) {
+              let dx = (x - speed) % (w + 30);
+              if (dx < -30) dx += w + 30;
+              if (Math.sin(x) > 0) ctx.fillRect(dx, groundY - 3, 4, 3);
+            }
+          } else if (currentStage.id === 3) { // Pavement Lines
+            ctx.fillStyle = '#F3F4F6';
+            for (let x = 0; x < w; x += 80) {
+              let dx = (x - speed * 1.5) % (w + 80);
+              if (dx < -80) dx += w + 80;
+              ctx.fillRect(dx, groundY + 8, 40, 4);
+            }
+          } else if (currentStage.id === 4 || currentStage.id === 5) { // Grid/Cracks
+            ctx.strokeStyle = (currentStage.id === 4) ? 'rgba(139, 92, 246, 0.3)' : 'rgba(220, 38, 38, 0.3)';
+            ctx.beginPath();
+            for (let x = 0; x < w; x += 40) {
+              let dx = (x - speed) % (w + 40);
+              if (dx < -40) dx += w + 40;
+              ctx.moveTo(dx, groundY);
+              ctx.lineTo(dx - 20, h);
+            }
+            ctx.stroke();
+          }
+        }
+
+        // ★ Shadow Helper
+        function drawShadow(x, y, w) {
+          ctx.save();
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+          ctx.beginPath();
+          ctx.ellipse(x, y, w, w * 0.3, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        function drawMoai() {
+          if (!moaiImageLoaded) return;
+
+          const x = player.x;
+          const y = player.y;
+          const bob = Math.sin(player.bob) * 1.5;
+          const frameWidth = 32;
+          const frameHeight = 48;
+
+          const drawX = x - frameWidth / 2;
+          const drawY = y - frameHeight + bob;
+
+          ctx.drawImage(
+            moaiImage,
+            0, 0, moaiImage.width, moaiImage.height,
+            drawX, drawY, frameWidth, frameHeight
+          );
+
+          if (player.onG) {
+            ctx.fillStyle = '#fff9';
+            const dustX = drawX + frameWidth / 4;
+            const dustY = y - 4;
+
+            ctx.fillRect(dustX - 4, dustY, 4, 2);
+            ctx.fillRect(dustX - 8, dustY + 2, 2, 2);
+          }
+        }
+
+        function drawBottle(it) {
+          // Check if image is loaded, otherwise fallback to simple rect
+          if (!yogurtImageLoaded) {
+            ctx.fillStyle = '#3b82f6';
+            ctx.fillRect(it.x, it.y, 14, 20);
+            return;
+          }
+
+          const x = (it.x - 8) | 0; // Center texturing
+          const y = (it.y - 30) | 0;
+          const w = 32; // Sprite base width
+          const h = 48; // Sprite base height (scaled down closer to 16x24 logic if needed, but keeping it visible)
+
+          // Use the loaded sprite
+          ctx.save();
+
+          // High score item (Strawberry Milk) -> Red Tint
+          if (it.score === 20) {
+            ctx.filter = 'hue-rotate(140deg) brightness(1.2)'; // Blue -> Pink/Red
+          }
+          // Heal item -> Golden Tint
+          else if (it.heal) {
+            ctx.filter = 'sepia(1) saturate(3) brightness(1.3)'; // Gold
+          }
+
+          ctx.drawImage(yogurtImage, 0, 0, yogurtImage.width, yogurtImage.height, x, y, 32, 32);
+
+          ctx.restore();
+        }
+
+
+        // ★ MoaiShot (モアイ弾) の描画
+        function drawMoaiShot(s) {
+          if (!moaiShotImageLoaded) return;
+          if (!s.type.startsWith('MoaiThrow')) return;
+
+          const x = s.x, y = s.y;
+          const frameWidth = 16;
+          const frameHeight = 16;
+
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(t * 0.2 + (s.type === 'MoaiThrow_Homing' ? Math.atan2(s.vy, s.vx) : 0));
+
+          ctx.drawImage(
+            moaiShotImage,
+            0, 0, moaiShotImage.width, moaiShotImage.height,
+            -frameWidth / 2, -frameHeight / 2, frameWidth, frameHeight
+          );
+
+          ctx.restore();
+        }
+
+        // ★ 敵描画関数群 (省略)
+
+        function drawInsect(d) {
+          if (!insectImageLoaded) return;
+
+          const x = (d.x) | 0, y = (d.y) | 0;
+          const bob = Math.sin(t * 0.5) * 2;
+          const frameWidth = 24;
+          const frameHeight = 24;
+
+          const drawX = x - frameWidth / 2;
+          const drawY = y - frameHeight / 2 + bob;
+
+          ctx.drawImage(insectImage, 0, 0, insectImage.width, insectImage.height, drawX, drawY, frameWidth, frameHeight);
+        }
+
+        function drawTax(d) {
+          if (!slimeImageLoaded) return;
+
+          const x = (d.x) | 0, y = (d.y) | 0;
+          const frameWidth = 48;
+          const frameHeight = 48;
+
+          const drawX = x - frameWidth / 2;
+          const drawY = y - frameHeight;
+
+          ctx.drawImage(slimeImage, 0, 0, slimeImage.width, slimeImage.height, drawX, drawY, frameWidth, frameHeight);
+        }
+
+        function drawCompany(d) {
+          if (!companyImageLoaded) return;
+          const frameWidth = 48;
+          const frameHeight = 24;
+          const x = (d.x) | 0;
+          const y = G.GROUND;
+
+          ctx.drawImage(companyImage, 0, 0, companyImage.width, companyImage.height, x - frameWidth / 2, y - frameHeight, frameWidth, frameHeight);
+        }
+
+        function drawMeeting(d) {
+          if (!meetingImageLoaded) return;
+          const frameWidth = 48;
+          const frameHeight = 32;
+          const x = (d.x) | 0;
+          const y = G.GROUND;
+
+          ctx.drawImage(meetingImage, 0, 0, meetingImage.width, meetingImage.height, x - frameWidth / 2, y - frameHeight, frameWidth, frameHeight);
+        }
+
+        function drawCelery(d) {
+          if (!celeryImageLoaded) return;
+          const frameWidth = 32;
+          const frameHeight = 32;
+          const x = (d.x) | 0;
+          const y = G.GROUND;
+
+          ctx.drawImage(celeryImage, 0, 0, celeryImage.width, celeryImage.height, x - frameWidth / 2, y - frameHeight, frameWidth, frameHeight);
+        }
+
+        function drawAnxiety(d) {
+          if (!anxietyImageLoaded) return;
+          const frameWidth = 32;
+          const frameHeight = 32;
+          const x = (d.x) | 0;
+          const y = (d.y) | 0;
+          const bob = Math.sin(t * 0.5) * 2;
+
+          ctx.drawImage(anxietyImage, 0, 0, anxietyImage.width, anxietyImage.height, x - frameWidth / 2, y - frameHeight / 2 + bob, frameWidth, frameHeight);
+        }
+
+        function drawWork(d) {
+          if (!workImageLoaded) return;
+          const frameWidth = 48;
+          const frameHeight = 48;
+          const x = (d.x) | 0;
+          const y = (d.y) | 0;
+
+          ctx.drawImage(workImage, 0, 0, workImage.width, workImage.height, x - frameWidth / 2, y - frameHeight, frameWidth, frameHeight);
+        }
+
+        function drawBoss() { /* 省略 */
+          if (!boss.active || !authorImageLoaded) return;
+          const x = boss.x;
+          const y = boss.y + Math.sin(t * 0.05) * 4;
+
+          ctx.save();
+          ctx.translate(x, y);
+
+          const frameWidth = 32;
+          const frameHeight = 50;
+          const drawX = -frameWidth / 2;
+          const drawY = -frameHeight / 2;
+
+          ctx.drawImage(
+            authorImage,
+            0, 0, authorImage.width, authorImage.height,
+            drawX, drawY, frameWidth, frameHeight
+          );
+
+          // 攻撃前のチャージ演出
+          if (boss.isCharging) {
+            ctx.fillStyle = (t % 10 < 5) ? '#ff0000' : '#ffaa00';
+            ctx.beginPath();
+            ctx.arc(0, 0, 10 + Math.sin(t * 0.5) * 2, 0, 6.28);
+            ctx.fill();
+          }
+
+          ctx.restore();
+
+          const hpRate = Math.max(0, boss.hp) / BOSS_MAX_HP;
+          const bw = 120;
+          ctx.fillStyle = '#000'; ctx.fillRect(G.W / 2 - bw / 2, 8, bw, 8);
+          ctx.fillStyle = '#dc2626'; ctx.fillRect(G.W / 2 - bw / 2, 8, bw * hpRate, 8);
+        }
+
+        // ★ ボス名タグの描画関数
+        function drawBossNameTag() {
+          if (!boss.active) return;
+          const x = boss.x;
+          const y = boss.y + Math.sin(t * 0.05) * 4;
+
+          const name = '作者'; // ★ キャラ名を「作者」に設定
+          const yPos = y - 40; // ボスの頭上より少し上
+
+          ctx.textAlign = 'center';
+          ctx.fillStyle = '#ffcc00';
+          ctx.font = '12px monospace';
+
+          // 外縁を黒で描画し、視認性を向上
+          ctx.strokeStyle = '#000';
+          ctx.lineWidth = 2;
+          ctx.strokeText(name, x, yPos);
+          ctx.fillText(name, x, yPos);
+        }
+
+
+        // ステージクリア演出描画
+        function drawClear() {
+          // 画面全体を覆う白いフラッシュ
+          ctx.fillStyle = `rgba(255, 255, 255, ${Math.max(0, 1 - t / 20)})`;
+          ctx.fillRect(0, 0, G.W, G.H);
+
+          ctx.textAlign = 'center';
+          ctx.fillStyle = '#111827';
+          ctx.font = '24px monospace';
+          ctx.fillText('STAGE CLEAR!', G.W / 2, G.H / 2 - 10);
+
+          ctx.font = '16px monospace';
+          ctx.fillText(`SCORE: ${score}`, G.W / 2, G.H / 2 + 20);
+        }
+
+        // ステージ切り替え演出描画
+        function drawTransition() {
+          const nextName = STAGES[nextStageIndex].name;
+          const duration = 90; // アニメーション全体のフレーム数
+          const phase = t / duration; // 0.0 -> 1.0
+
+          // 黒い帯が中央に集まる、または広がる演出
+          let coverHeight = G.H * 0.6;
+          let coverY = G.H / 2 - coverHeight / 2;
+
+          // 最初のフェーズ (0-40フレーム): 画面全体を覆う
+          // 2番目のフェーズ (40-90フレーム): タイトルを表示し、画面外に広がる
+
+          if (phase < 0.4) {
+            // 帯が広がるフェーズ (画面を覆い隠す)
+            coverY = G.H / 2 - (coverHeight * phase / 0.4) / 2;
+            coverHeight = coverHeight * phase / 0.4;
+          } else {
+            // 帯が画面外へ広がるフェーズ
+            const reversePhase = (phase - 0.4) / 0.6; // 0.0 -> 1.0
+            coverY = G.H / 2 - coverHeight / 2 - (G.H * 0.5 * reversePhase);
+            coverHeight = G.H + (G.H * reversePhase);
+          }
+
+          ctx.fillStyle = '#111827';
+          ctx.fillRect(0, coverY, G.W, coverHeight);
+
+          if (phase > 0.1 && phase < 0.8) {
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#e6f0ff';
+            ctx.font = '20px monospace';
+            ctx.fillText(`STAGE ${nextStageIndex + 1}: ${nextName}`, G.W / 2, G.H / 2 + 6);
+          }
+        }
+
+        // ステージテーマタイトル描画ロジック
+        function drawTitle() {
+          const stageNum = stageIndex + 1;
+          const stageName = currentStage.name;
+          const stageTheme = currentStage.theme; // 新しいテーマプロパティを使用
+
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+          ctx.fillRect(0, 0, G.W, G.H);
+
+          ctx.textAlign = 'center';
+          ctx.fillStyle = '#e6f0ff';
+
+          // フェードイン/アウト演出
+          const duration = 120;
+          const alpha = Math.sin(Math.min(1, t / duration) * Math.PI);
+          ctx.globalAlpha = alpha;
+
+          ctx.font = '24px monospace';
+          ctx.fillText(`STAGE ${stageNum}: ${stageName}`, G.W / 2, G.H / 2 - 25);
+
+          ctx.font = '16px monospace';
+          ctx.fillText(`THEME: ${stageTheme}`, G.W / 2, G.H / 2 + 15);
+
+          ctx.globalAlpha = 1; // 元に戻す
+        }
+
+        // 敵名タグの描画関数 (省略)
+        function drawNameTag(d) {
+          let name = d.type;
+          if (name === 'Company') name = '会社';
+          else if (name === 'Meeting') name = '打合せ';
+          else if (name === 'Celery') name = 'セロリ';
+          else if (name === 'Anxiety') name = '不安';
+          else if (name === 'Tax') name = '税金';
+          else if (name === 'Work') name = '仕事';
+          else if (name === 'Insect' || name === 'DiveInsect') name = '昆虫';
+
+          const yOffset = (d.type === 'Tax') ? 40 : 30;
+          const yPos = d.y - yOffset;
+
+          ctx.textAlign = 'center';
+          ctx.fillStyle = '#fff';
+          ctx.font = '10px monospace';
+
+          ctx.strokeStyle = '#000';
+          ctx.lineWidth = 2;
+          ctx.strokeText(name, d.x, yPos);
+          ctx.fillText(name, d.x, yPos);
+        }
+
+
+        // ====================================
+        //  LOGIC
+        // ====================================
+        function initGame() { // 省略
+          state = 'START';
+          score = 0;
+          lives = 10;
+          stageIndex = 0;
+
+          startEl.style.display = 'flex';
+          overEl.style.display = 'none';
+        }
+
+        function loadStage(idx) { // ステージ開始時の初期化
+          stageIndex = idx;
+          currentStage = STAGES[stageIndex];
+          items.length = 0;
+          obstacles.length = 0;
+          bossShots.length = 0;
+          bullets.length = 0;
+
+          player.x = 20;
+          player.y = G.GROUND;
+          player.vy = 0;
+          player.speed = currentStage.speed;
+          player.bg = 0;
+          workSpawn = 0;
+
+          stDisplayEl.textContent = currentStage.name;
+          tgEl.textContent = isFinite(currentStage.target) ? currentStage.target : '----';
+
+          // ★ ステージ開始時はTITLE状態に移行
+          state = 'TITLE';
+          t = 0; // タイマーリセット
+
+          if (currentStage.boss) {
+            lives = MAX_LIVES;
+            boss.active = true;
+            boss.hp = BOSS_MAX_HP;
+            boss.timer = 0;
+            boss.x = G.W - 30;
+            boss.attackIndex = 0;
+            boss.attackTimer = 180;
+            boss.isCharging = false;
+            boss.beamWidth = 0;
+          } else {
+            boss.active = false;
+          }
+          stopBgm();
+          updateBgmSequencer();
+        }
+
+        function startGame() {
+          // ★ ゲームスタートのロジック修正
+          if (state === 'START' || state === 'OVER') {
+            // ゲームの状態をリセット
+            score = 0;
+            lives = MAX_LIVES;
+
+            // ステージロード (loadStage内でstateはTITLEに変わる)
+            loadStage(0);
+
+            startEl.style.display = 'none';
+            overEl.style.display = 'none';
+            beep(660, 0.1, 'square', 0.2);
+          }
+        }
+
+        function bossAttack() { /* 省略 */
+          boss.attackTimer--;
+          const attackType = BOSS_ATTACKS[boss.attackIndex];
+          const bx = boss.x - 20;
+          const by = boss.y - 20;
+
+          // ★ 攻撃クールダウンの基準値を増やす (360)
+          if (boss.attackTimer <= 0) {
+            boss.attackIndex = (boss.attackIndex + 1) % BOSS_ATTACKS.length;
+            boss.attackTimer = 360; // クールダウン増加
+            boss.isCharging = false;
+            boss.beamWidth = 0;
+            return;
+          }
+
+          // 攻撃パターン 1: MoaiThrow_Arc (放物線投げ)
+          if (attackType === 'MoaiThrow_Arc' && boss.attackTimer % 80 === 0 && boss.attackTimer > 160) {
+            const targetX = player.x;
+            const targetY = player.y - 15;
+            const angleToTarget = Math.atan2(targetY - by, targetX - bx);
+            const randomOffset = (Math.random() - 0.5) * 0.6;
+            const initialAngle = angleToTarget + randomOffset;
+            const initialSpeed = 8 + (Math.random() * 4);
+
+            const vx = Math.cos(initialAngle) * initialSpeed;
+            const vy = Math.sin(initialAngle) * initialSpeed;
+
+            bossShots.push({ x: bx, y: by, vx: vx, vy: vy, type: attackType, gravity: 0.2 });
+            beep(150, 0.1, 'sawtooth', 0.1);
+          }
+
+          // 攻撃パターン 2: MoaiThrow_Horizontal (水平連射)
+          if (attackType === 'MoaiThrow_Horizontal') {
+            const shootY = boss.y + Math.sin(t * 0.1) * 10;
+            const speed = 4.0;
+
+            if (boss.attackTimer > 60 && boss.attackTimer % 30 === 0) { // 連射間隔を30フレームに延長
+              const angle = Math.atan2(player.y - shootY, player.x - bx);
+              const vx = Math.cos(angle) * speed;
+              const vy = Math.sin(angle) * speed * 0.2;
+              bossShots.push({ x: bx, y: shootY, vx: vx, vy: vy, type: attackType, gravity: 0 });
+              beep(800, 0.03, 'sine', 0.1);
+            }
+
+            if (boss.attackTimer === 300) boss.isCharging = true;
+            if (boss.attackTimer === 250) boss.isCharging = false;
+            if (boss.attackTimer === 50) boss.attackTimer = 0;
+          }
+
+          // 攻撃パターン 3: MoaiThrow_Homing (誘導投げ)
+          // ★ 誘導弾は攻撃フェーズ中、1回だけ発射
+          if (attackType === 'MoaiThrow_Homing' && boss.attackTimer === 240) {
+            const dx = player.x - bx;
+            const dy = player.y - by;
+            const angle = Math.atan2(dy, dx);
+            const speed = 2.5;
+
+            // ★ 誘導弾に寿命タイマーをセット (300フレーム = 5秒)
+            bossShots.push({ x: bx, y: by, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, type: attackType, homingTarget: player, lifetime: 300 });
+            beep(200, 0.08, 'triangle', 0.15);
+          }
+        }
+
+
+        function updatePlay() {
+          t++;
+          player.bg += player.speed;
+          player.bob += 0.2;
+
+          player.vy += 0.44;
+          player.y += player.vy;
+          if (player.y >= G.GROUND) {
+            player.y = G.GROUND;
+            player.vy = 0;
+            player.onG = true;
+          }
+
+          const isBoss = currentStage.boss && boss.active;
+
+          if (!isBoss) {
+            // アイテムスポーン (省略)
+            if (--itemSpawn <= 0) {
+              const isStrawberry = Math.random() < 0.15;
+              const scoreValue = isStrawberry ? 20 : 10;
+              const isHeal = Math.random() < 0.05;
+              items.push({ x: G.W + 20, y: G.GROUND - 10 - Math.random() * 40, taken: false, heal: isHeal, score: scoreValue });
+              itemSpawn = (30 / player.speed * currentStage.obsRate) | 0 + Math.random() * 20;
+            }
+
+            // 1. 通常の敵スポーン (Workを除く)
+            if (--obstacleSpawn <= 0) {
+              const r = Math.random();
+              let spawnRateSum = 0;
+              let type = null;
+
+              // Tax, Insect, Company, Meeting, Celery, Anxietyの抽選ロジック (省略)
+              spawnRateSum += currentStage.taxRate;
+              if (r < spawnRateSum) { type = 'Tax'; }
+              else {
+                spawnRateSum += currentStage.insectRate;
+                if (r < spawnRateSum) { type = (Math.random() < 0.7) ? 'Insect' : 'DiveInsect'; }
+                else {
+                  spawnRateSum += currentStage.companyRate;
+                  if (r < spawnRateSum) { type = 'Company'; }
+                  else {
+                    spawnRateSum += currentStage.meetingRate;
+                    if (r < spawnRateSum) { type = 'Meeting'; }
+                    else {
+                      spawnRateSum += currentStage.celeryRate;
+                      if (r < spawnRateSum) { type = 'Celery'; }
+                      else {
+                        spawnRateSum += currentStage.anxietyRate;
+                        if (r < spawnRateSum) { type = 'Anxiety'; }
+                      }
+                    }
+                  }
+                }
+              }
+
+              if (type) {
+                let newObstacle = { x: G.W + 20, type: type, hit: false, vy: 0 };
+                // 敵の初期Y座標設定（Workを除く）
+                if (type === 'Insect' || type === 'DiveInsect') {
+                  newObstacle.y = (type === 'Insect') ? G.GROUND - (Math.random() < 0.6 ? 20 : 50) : 0;
+                } else if (type === 'Tax') {
+                  newObstacle.y = G.GROUND - 15;
+                } else if (type === 'Anxiety') {
+                  newObstacle.y = G.GROUND - 50;
+                  newObstacle.startY = G.GROUND - 50;
+                  newObstacle.amplitude = 30;
+                  newObstacle.phase = Math.random() * 6.28;
+                } else { // Company, Meeting, Celery (地上固定)
+                  newObstacle.y = G.GROUND;
+                }
+                obstacles.push(newObstacle);
+              }
+
+              obstacleSpawn = (90 / player.speed * currentStage.obsRate) | 0 + Math.random() * 50;
+            }
+
+            // 2. 仕事 (Work) 専用スポーンロジック 
+            if (currentStage.workRate > 0 && --workSpawn <= 0) {
+              const min = currentStage.workSpawnMin;
+              const max = currentStage.workSpawnMax;
+              workSpawn = min + Math.random() * (max - min);
+
+              if (Math.random() < currentStage.workRate) {
+                let workObstacle = { x: G.W + 20, type: 'Work', hit: false, vy: 0 };
+
+                if (Math.random() < 0.7) {
+                  workObstacle.y = G.GROUND;
+                } else {
+                  workObstacle.y = 0;
+                  workObstacle.isFallingWork = true;
+                }
+                obstacles.push(workObstacle);
+              }
+            }
+
+
+            // プレイヤー速度上昇の頻度を緩和 (1200フレームごと)
+            if (t % 1200 === 0) player.speed = Math.min(player.speed + 0.1, 4.0);
+          } else {
+            // Boss Logic (PLAY状態でのみ実行)
+            bossAttack();
+
+            // プレイヤーの弾丸とボスの当たり判定ロジック
+            for (let i = bullets.length - 1; i >= 0; i--) {
+              const b = bullets[i];
+              // ボスとの衝突判定
+              if (Math.abs(b.x - boss.x) < 28 && Math.abs(b.y - boss.y) < 30) {
+                boss.hp -= 4; // ダメージを与える
+                bullets.splice(i, 1); // 弾丸を削除
+                beep(800, 0.05, 'square', 0.1);
+                if (boss.hp <= 0) {
+                  state = 'ENDING';
+                  endScrollY = G.H;
+                  playFanfare();
+                  return;
+                }
+              }
+            }
+          }
+
+          // Move & Collide (省略)
+          items.forEach(it => it.x -= player.speed);
+          for (let i = items.length - 1; i >= 0; i--) {
+            const it = items[i];
+            if (!it.taken && Math.abs(it.x - player.x) < 14 && Math.abs(it.y - player.y + 10) < 18) {
+              it.taken = true;
+              score += it.score;
+              if (it.heal) { lives = Math.min(lives + 1, MAX_LIVES); beep(1200, 0.1, 'sine', 0.3); }
+              else beep(880, 0.08, 'triangle', 0.2);
+            }
+            if (it.x < -20 || it.taken) items.splice(i, 1);
+          }
+
+          // Obstacles
+          for (let i = obstacles.length - 1; i >= 0; i--) {
+            const d = obstacles[i];
+            d.x -= player.speed * 1.2;
+
+            // 敵の挙動を新しいタイプ名で再適用
+            if (d.type === 'Insect') { // 昆虫 (Drone)
+              if (d.y < G.GROUND) d.y += Math.sin(t * 0.1) * 0.5;
+            } else if (d.type === 'DiveInsect') { // 突進昆虫 (DiveDrone)
+              if (d.y < G.GROUND - 20) d.vy += 0.3;
+              else d.vy = 0;
+              d.y += d.vy;
+            } else if (d.type === 'Anxiety') { // 将来の不安 (Mine)
+              d.y = d.startY + Math.sin(t * 0.1 + d.phase) * d.amplitude;
+            } else if (d.type === 'Tax') { // 税金 (Slime)
+              d.y = G.GROUND - 15;
+            } else if (d.type === 'Company' || d.type === 'Meeting' || d.type === 'Celery' || d.type === 'Work') { // 地上固定
+              if (d.type !== 'Work' || !d.isFallingWork) {
+                d.y = G.GROUND;
+              }
+            } else if (d.type === 'Work' && d.isFallingWork) { // 仕事 (落下中)
+              if (d.y < G.GROUND) d.vy += 0.4;
+              else d.vy = 0;
+              d.y += d.vy;
+            }
+
+            // 当たり判定
+            if (!d.hit) {
+              let hit = false;
+              let collisionRadius = 12;
+              let collisionOffsetY = 16;
+
+              if (d.type === 'Tax') { // 税金 (Slime)
+                collisionRadius = 20;
+                collisionOffsetY = 24;
+              } else if (d.type === 'Insect' || d.type === 'DiveInsect') { // 昆虫 (Drone)
+                collisionRadius = 14;
+                collisionOffsetY = 12;
+              } else if (d.type === 'Company') { // 会社 (Spike) - 地上判定
+                if (player.onG && Math.abs(d.x - player.x) < 14) { hit = true; }
+              } else if (d.type === 'Meeting' || d.type === 'Work') { // 打ち合わせ/仕事 - 地上固定
+                collisionRadius = 20;
+                collisionOffsetY = 16;
+              } else if (d.type === 'Celery') { // 生セロリ - 地上固定 
+                collisionRadius = 20; // 修正済み
+                collisionOffsetY = 16;
+              } else if (d.type === 'Anxiety') { // 将来の不安 (Mine)
+                collisionRadius = 14;
+                collisionOffsetY = 16;
+              }
+
+              // 地上固定（Companyのみ特殊判定、その他は円形判定）
+              if (d.type !== 'Company' && !hit) {
+                if (Math.abs(d.x - player.x) < collisionRadius && Math.abs(d.y - player.y + collisionOffsetY) < collisionRadius) { hit = true; }
+              }
+
+              if (hit) {
+                d.hit = true;
+                lives--;
+                beep(100, 0.2, 'sawtooth', 0.3);
+              }
+            }
+
+            if (d.x < -20 || d.hit) obstacles.splice(i, 1);
+          }
+
+          // Boss Shots (攻撃弾の挙動修正)
+          for (let i = bossShots.length - 1; i >= 0; i--) {
+            const s = bossShots[i];
+
+            // ★ 誘導弾の寿命チェック
+            if (s.type === 'MoaiThrow_Homing') {
+              s.lifetime--;
+              if (s.lifetime <= 0) {
+                bossShots.splice(i, 1);
+                continue;
+              }
+            }
+
+            if (s.type === 'MoaiThrow_Arc') { // 放物線投げ
+              s.vy += s.gravity;
+            }
+            else if (s.type === 'MoaiThrow_Homing') { // 追尾投げ
+              const targetX = player.x;
+              const targetY = player.y - 15;
+              const dx = targetX - s.x;
+              const dy = targetY - s.y;
+              const angle = Math.atan2(dy, dx);
+              const currentSpeed = Math.sqrt(s.vx * s.vx + s.vy * s.vy);
+              const homingFactor = 0.05;
+
+              const MAX_TURN_RATE = 0.05;
+              let currentAngle = Math.atan2(s.vy, s.vx);
+              let angleDiff = angle - currentAngle;
+
+              if (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
+              if (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
+
+              if (angleDiff > MAX_TURN_RATE) angleDiff = MAX_TURN_RATE;
+              else if (angleDiff < -MAX_TURN_RATE) angleDiff = -MAX_TURN_RATE;
+
+              let newAngle = currentAngle + angleDiff;
+              const MAX_SPEED = 5.0;
+
+              s.vx = Math.cos(newAngle) * currentSpeed;
+              s.vy = Math.sin(newAngle) * currentSpeed;
+
+              const mag = Math.sqrt(s.vx * s.vx + s.vy * s.vy);
+              if (mag > MAX_SPEED) {
+                s.vx = (s.vx / mag) * MAX_SPEED;
+                s.vy = (s.vy / mag) * MAX_SPEED;
+              }
+            }
+
+            s.x += s.vx;
+            s.y += s.vy;
+
+            if (Math.abs(s.x - player.x) < 10 && Math.abs(s.y - player.y + 16) < 16) {
+              lives--;
+              bossShots.splice(i, 1);
+              beep(100, 0.2, 'sawtooth', 0.3);
+            }
+            // 誘導弾 (MoaiThrow_Homing) 専用の画面外削除ロジック
+            else if (s.type === 'MoaiThrow_Homing' && (s.x < player.x - 100 || s.y > G.H + 50 || s.y < -50)) {
+              bossShots.splice(i, 1);
+            }
+            else if (s.x < -20 || s.y > G.H + 20) bossShots.splice(i, 1);
+          }
+
+          // Player Bullets (ボス戦での攻撃に使用)
+          for (let i = bullets.length - 1; i >= 0; i--) {
+            bullets[i].x += 5;
+            if (bullets[i].x > G.W) bullets.splice(i, 1);
+          }
+
+          // Stage Clear Check (演出追加)
+          if (!isBoss && score >= currentStage.target) {
+            if (stageIndex < STAGES.length - 1) {
+              nextStageIndex = stageIndex + 1; // 次のステージを記録
+              state = 'CLEAR'; // ★ CLEAR状態に移行
+              t = 0; // タイマーをリセットして演出時間を計測
+              playFanfare();
+              return;
+            }
+          }
+
+          // Game Over (省略)
+          // Game Over Check
+          if (lives <= 0) {
+            state = 'OVER';
+            stopBgm(); // Ensure sound stops
+
+            // Update High Score
+            best = Math.max(best, score);
+
+            // Show Game Over Overlay
+            const overScreen = document.getElementById('over');
+            document.getElementById('overTitle').textContent = 'GAME OVER';
+            document.getElementById('scoreline').textContent = `SCORE: ${score} / BEST: ${best}`;
+            overScreen.style.display = 'flex';
+
+            // Auto-redirect to Title after 3 seconds (User requested "Return to Start Screen")
+            // Or wait for click. Let's keep the button but adding a safeguard or auto-transition might be nice?
+            // User said "Return to Start Screen". Let's enable the click to work.
+          }
+
+          // Update UI (省略)
+          scEl.textContent = score;
+          // Hearts visual + Number
+          lfHeartsEl.textContent = '💛'.repeat(Math.max(0, lives));
+          lfNumEl.textContent = lives;
+        }
+
+        // ステージクリア後の更新ロジック
+        function updateClear() {
+          t++;
+          if (t > 60) { // 1秒間のクリア表示後、トランジションに移行
+            state = 'TRANSITION';
+            t = 0;
+          }
+        }
+
+        // ステージ切り替えの更新ロジック
+        function updateTransition() {
+          t++;
+          if (t > 90) { // トランジションアニメーション終了後、次のステージをロード
+            loadStage(nextStageIndex); // 新しいステージのロード (この中でstateがTITLEに変わる)
+            t = 0;
+          }
+        }
+
+        // タイトル表示の更新ロジック
+        function updateTitle() {
+          t++;
+          if (t > 120) { // 2秒 (120フレーム) 表示
+            state = 'PLAY';
+            t = 0;
+          }
+        }
+
+        // ★ エンドロールの更新ロジック (秘密のコード停止処理を修正)
+        function updateEnding() {
+          const textHeight = 20;
+          // 秘密コードブロックが画面中央に達する目標位置を計算
+          const targetY = G.H / 2 - textHeight * 1.5;
+          // 秘密コードブロックの現在の先頭行のY座標
+          const currentCodeBlockY = endScrollY + SECRET_CODE_START_INDEX * textHeight;
+
+          // 秘密コードブロックが中央に到達したらスクロールを停止
+          if (currentCodeBlockY < targetY && endScrollY > -1000) {
+            endScrollY -= 0.6; // 通常のスクロール速度
+          } else if (currentCodeBlockY >= targetY && t < SECRET_CODE_DURATION) {
+            // スクロール停止＆演出中
+            t++;
+          } else {
+            // 演出終了後、スクロール再開
+            endScrollY -= 0.6;
+            t++;
+
+            // エンドロール終了チェック
+            if (endScrollY < - (CREDITS.length * textHeight + 100)) {
+              state = 'OVER';
+              best = Math.max(best, score);
+              document.getElementById('overTitle').textContent = 'YOU WIN!';
+              document.getElementById('scoreline').textContent = `FINAL SCORE: ${score}`;
+              document.getElementById('retry').textContent = 'PLAY AGAIN';
+              overEl.style.display = 'flex';
+              stopBgm();
+            }
+          }
+        }
+
+
+        // ====================================
+        //  MAIN LOOP
+        // ====================================
+        function loop() {
+          ctx.clearRect(0, 0, G.W, G.H);
+
+          // Include START (for background) and OVER (for background behind game over)
+          if (state === 'PLAY' || state === 'CLEAR' || state === 'TRANSITION' || state === 'TITLE' || state === 'ENDING' || state === 'OVER') {
+            drawSky();
+            drawGround();
+            items.forEach(drawBottle);
+
+            // Draw Shadows & Obstacles
+            obstacles.forEach(d => {
+              // Shadow Logic
+              let sw = 0;
+              if (d.type === 'Insect' || d.type === 'DiveInsect') sw = 8;
+              else if (d.type === 'Tax') sw = 18;
+              else if (d.type === 'Anxiety') sw = 10;
+              else if (d.type === 'Company') sw = 16;
+              else if (d.type === 'Meeting' || d.type === 'Work') sw = 20;
+              else if (d.type === 'Celery') sw = 14;
+
+              if (sw > 0 && d.type !== 'Work') drawShadow(d.x, G.GROUND, sw);
+              if (d.type === 'Work') drawShadow(d.x, G.GROUND, 16);
+
+              if (d.type === 'Insect' || d.type === 'DiveInsect') drawInsect(d);
+              else if (d.type === 'Tax') drawTax(d);
+              else if (d.type === 'Company') drawCompany(d);
+              else if (d.type === 'Meeting') drawMeeting(d);
+              else if (d.type === 'Celery') drawCelery(d);
+              else if (d.type === 'Anxiety') drawAnxiety(d);
+              else if (d.type === 'Work') drawWork(d);
+            });
+
+            drawShadow(player.x, G.GROUND, 12);
+            drawMoai();
+
+            bullets.forEach(b => {
+              ctx.save();
+              ctx.translate(b.x, b.y);
+              ctx.rotate(Math.PI / 2); // 90 degrees clockwise
+
+              if (yogurtImageLoaded) {
+                ctx.drawImage(yogurtImage, 0, 0, yogurtImage.width, yogurtImage.height, -12, -12, 24, 24);
+              } else {
+                ctx.fillStyle = '#e5f0ff';
+                ctx.beginPath();
+                ctx.arc(0, 0, 3, 0, 6.28);
+                ctx.fill();
+              }
+              ctx.restore();
+            });
+
+            if (currentStage.boss && boss.active) {
+              drawBoss();
+              bossShots.forEach(drawMoaiShot);
+            }
+
+            // ★ 敵名タグの描画
+            if (state === 'PLAY' || state === 'CLEAR' || state === 'TITLE') {
+              obstacles.forEach(drawNameTag);
+            }
+
+            // ★ ボス名タグの描画
+            if (state === 'PLAY' && currentStage.boss && boss.active) {
+              drawBossNameTag();
+            }
+
+
+            // ★ 状態ごとの更新と描画オーバーレイ
+            if (state === 'PLAY') updatePlay();
+            else if (state === 'CLEAR') {
+              drawClear();
+              updateClear();
+            }
+            else if (state === 'TRANSITION') {
+              drawTransition();
+              updateTransition();
+            }
+            else if (state === 'TITLE') {
+              drawTitle();
+              updateTitle();
+            }
+            else if (state === 'ENDING') {
+              ctx.fillStyle = 'rgba(0,0,0,0.7)';
+              ctx.fillRect(0, 0, G.W, G.H);
+
+              // ★ エンドロール描画ロジックの実行
+              ctx.font = '12px monospace';
+              ctx.textAlign = 'center';
+
+              const textHeight = 20;
+              let currentScrollY = endScrollY;
+
+              const codeSectionReached = endScrollY + SECRET_CODE_START_INDEX * textHeight <= (G.H / 2 - textHeight * 1.5);
+
+              if (codeSectionReached && t < SECRET_CODE_DURATION) {
+                // 停止中。エンドロールの y 座標を固定
+                const targetY = G.H / 2 - textHeight * 1.5;
+                currentScrollY = targetY - SECRET_CODE_START_INDEX * textHeight;
+
+                // 金色のオーラを描画 (t を使用してアニメーション)
+                const flash = Math.sin(t * 0.1) * 0.1 + 0.1;
+                ctx.fillStyle = `rgba(255, 215, 0, ${flash})`;
+                ctx.fillRect(0, 0, G.W, G.H);
+              }
+
+              CREDITS.forEach((line, i) => {
+                let y = currentScrollY + i * textHeight;
+
+                if (y > -textHeight && y < G.H + textHeight) { // 画面内にあるかチェック
+
+                  // ★★★ YOGURTLOVE の行 (Index 14) のみ強調されるように修正 ★★★
+                  if (i === 14) {
+                    const goldFlash = (Math.sin(t * 0.2) * 0.5) + 0.5;
+
+                    // スタイル設定（YOGURTLOVE専用）
+                    ctx.fillStyle = `rgba(255, 215, 0, ${goldFlash})`; // 金色に点滅
+                    ctx.font = '16px monospace';
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = `rgba(255, 215, 0, 0.5)`;
+                  } else {
+                    // デフォルトスタイルに戻す
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '12px monospace';
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                  }
+
+                  ctx.strokeText(line, G.W / 2, y); // アウトライン
+                  ctx.fillText(line, G.W / 2, y);
+                }
+              });
+
+              // ★ スクロールロジックの実行
+              updateEnding();
+            }
+          } else {
+            drawSky();
+            drawGround();
+          }
+
+          requestAnimationFrame(loop);
+        }
+
+        // ====================================
+        //  INPUTS (省略)
+        // ====================================
+        function jump() {
+          if (state !== 'PLAY') return;
+          if (player.onG) {
+            player.vy = -8.5;
+            player.onG = false;
+            beep(700, 0.05, 'square', 0.1);
+          }
+        }
+        function drop() {
+          if (state !== 'PLAY') return;
+          if (!player.onG) player.vy += 2.5;
+        }
+        function shoot() {
+          if (state !== 'PLAY') return;
+          // ★ ファイナルステージでの攻撃許可ロジック
+          if (currentStage.boss && boss.active) {
+            bullets.push({ x: player.x + 10, y: player.y - 30 });
+            beep(900, 0.04, 'square', 0.1);
+          }
+        }
+
+        document.getElementById('go').onclick = startGame;
+        document.getElementById('retry').onclick = initGame;
+
+        // ★ Debug Logic
+        window.startDebugGame = function (idx) {
+          score = 0;
+          lives = MAX_LIVES;
+          loadStage(idx);
+          startEl.style.display = 'none';
+          overEl.style.display = 'none';
+          beep(660, 0.1, 'square', 0.2);
+        };
+
+        let moaiClickCount = 0;
+        const titleLogo = document.getElementById('title-logo');
+        if (titleLogo) {
+          titleLogo.addEventListener('click', () => {
+            moaiClickCount++;
+            if (moaiClickCount === 5) {
+              document.getElementById('debugMenu').style.display = 'flex';
+              beep(1200, 0.1, 'sine', 0.2);
+            }
+          });
+        }
+
+        const jBtn = document.getElementById('jump');
+        // drop button removed
+        const sBtn = document.getElementById('shot');
+
+        jBtn.addEventListener('touchstart', e => { e.preventDefault(); jump() }, { passive: false });
+        // drop event removed
+        sBtn.addEventListener('touchstart', e => { e.preventDefault(); shoot() }, { passive: false });
+
+        addEventListener('keydown', e => {
+          if (e.code === 'Enter' && (state === 'START' || state === 'OVER')) {
+            if (state === 'OVER') initGame(); else startGame();
+          }
+          if (e.code === 'KeyD' && state === 'START') {
+            document.getElementById('debugMenu').style.display = 'flex';
+            beep(1200, 0.1, 'sine', 0.2);
+          }
+          if (e.code === 'Space' || e.code === 'ArrowUp') jump();
+          if (e.code === 'ArrowDown') drop();
+          if (e.code === 'KeyF') shoot();
+        });
+
+        // START
+        initGame();
+        updateMuteUI();
+        loop();
+
+      })();
+    </script>
+</body>
+
+</html>

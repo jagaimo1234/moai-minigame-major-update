@@ -523,13 +523,20 @@
         }
 
         ['touchstart', 'mousedown', 'keydown'].forEach(ev => {
-          addEventListener(ev, async () => {
+          addEventListener(ev, async (e) => {
+            // ★ Canvas Game Over Reset
+            if (state === 'OVER') {
+              e.preventDefault();
+              location.reload();
+              return;
+            }
+
             try {
               const c = audioCtx();
               if (c.state === 'suspended') await c.resume();
               audioUnlocked = true;
             } catch (e) { }
-          }, { passive: true });
+          }, { passive: false }); // Changed to false to allow preventDefault
         });
 
         function beep(freq = 440, dur = 0.07, type = 'square', vol = 0.18) {
@@ -1397,49 +1404,45 @@
           }
         }
 
+        // ====================================
+        //  CANVAS GAME OVER LOGIC
+        // ====================================
         function triggerGameOver() {
           try {
             state = 'OVER';
             stopBgm();
-
-            // Update High Score
             best = Math.max(best, score);
-
-            console.log("TRIGGER GAME OVER. Score:", score);
-
-            // Use setTimeout to ensure UI updates even if main thread is busy
-            setTimeout(() => {
-              const overScreen = document.getElementById('over');
-              if (overScreen) {
-                document.getElementById('overTitle').textContent = 'GAME OVER';
-                document.getElementById('scoreline').textContent = `SCORE: ${score} / BEST: ${best}`;
-                overScreen.style.display = 'flex';
-                console.log("Overlay set to flex.");
-
-                // Ensure retry works
-                const retryBtn = document.getElementById('retry');
-                if (retryBtn) {
-                  retryBtn.onclick = function () {
-                    console.log("Retry Clicked");
-                    location.reload();
-                  };
-                  retryBtn.ontouchstart = function (e) {
-                    e.preventDefault();
-                    console.log("Retry Touched");
-                    location.reload();
-                  };
-                }
-              } else {
-                console.error("Overlay element not found!");
-                alert("GAME OVER\nScore: " + score);
-                location.reload();
-              }
-            }, 50); // Slight delay to separate from logic frame
+            // No HTML overlay manipulation anymore.
+            // Canvas loop will pick up 'OVER' state and draw it.
           } catch (e) {
             console.error("Game Over Error:", e);
-            // Fallback if everything fails
-            alert("GAME OVER\nScore: " + score);
-            location.reload();
+            location.reload(); // Safety net
+          }
+        }
+
+        function drawGameOver() {
+          // Semi-transparent black overlay
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+          ctx.fillRect(0, 0, G.W, G.H);
+
+          ctx.textAlign = 'center';
+
+          // "GAME OVER"
+          ctx.fillStyle = '#FF0000'; // Red
+          ctx.font = '20px monospace';
+          ctx.fillText('GAME OVER', G.W / 2, G.H / 2 - 20);
+
+          // Score
+          ctx.fillStyle = '#fff';
+          ctx.font = '12px monospace';
+          ctx.fillText(`SCORE: ${score}`, G.W / 2, G.H / 2 + 10);
+          ctx.fillText(`BEST: ${best}`, G.W / 2, G.H / 2 + 25);
+
+          // Retry Prompt
+          ctx.fillStyle = '#FFD700'; // Gold
+          const blink = Math.floor(Date.now() / 500) % 2 === 0;
+          if (blink) {
+            ctx.fillText('TAP TO TITLE', G.W / 2, G.H / 2 + 55);
           }
         }
 
@@ -1872,6 +1875,10 @@
             else if (state === 'TITLE') {
               drawTitle();
               updateTitle();
+            }
+            else if (state === 'OVER') {
+              drawGameOver();
+              // No update function needed unless we want animations
             }
             else if (state === 'ENDING') {
               ctx.fillStyle = 'rgba(0,0,0,0.7)';

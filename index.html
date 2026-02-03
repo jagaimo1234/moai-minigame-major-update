@@ -1383,6 +1383,66 @@
         }
 
 
+        // ====================================
+        //  DAMAGE & GAME OVER LOGIC (NEW)
+        // ====================================
+
+        function damagePlayer(amount) {
+          if (state !== 'PLAY') return;
+          lives -= amount;
+          beep(100, 0.2, 'sawtooth', 0.3);
+
+          if (lives <= 0) {
+            triggerGameOver();
+          }
+        }
+
+        function triggerGameOver() {
+          try {
+            state = 'OVER';
+            stopBgm();
+
+            // Update High Score
+            best = Math.max(best, score);
+
+            console.log("TRIGGER GAME OVER. Score:", score);
+
+            // Use setTimeout to ensure UI updates even if main thread is busy
+            setTimeout(() => {
+              const overScreen = document.getElementById('over');
+              if (overScreen) {
+                document.getElementById('overTitle').textContent = 'GAME OVER';
+                document.getElementById('scoreline').textContent = `SCORE: ${score} / BEST: ${best}`;
+                overScreen.style.display = 'flex';
+                console.log("Overlay set to flex.");
+
+                // Ensure retry works
+                const retryBtn = document.getElementById('retry');
+                if (retryBtn) {
+                  retryBtn.onclick = function () {
+                    console.log("Retry Clicked");
+                    location.reload();
+                  };
+                  retryBtn.ontouchstart = function (e) {
+                    e.preventDefault();
+                    console.log("Retry Touched");
+                    location.reload();
+                  };
+                }
+              } else {
+                console.error("Overlay element not found!");
+                alert("GAME OVER\nScore: " + score);
+                location.reload();
+              }
+            }, 50); // Slight delay to separate from logic frame
+          } catch (e) {
+            console.error("Game Over Error:", e);
+            // Fallback if everything fails
+            alert("GAME OVER\nScore: " + score);
+            location.reload();
+          }
+        }
+
         function updatePlay() {
           t++;
           player.bg += player.speed;
@@ -1574,8 +1634,7 @@
 
               if (hit) {
                 d.hit = true;
-                lives--;
-                beep(100, 0.2, 'sawtooth', 0.3);
+                damagePlayer(1);
               }
             }
 
@@ -1634,9 +1693,8 @@
             s.y += s.vy;
 
             if (Math.abs(s.x - player.x) < 10 && Math.abs(s.y - player.y + 16) < 16) {
-              lives--;
+              damagePlayer(1);
               bossShots.splice(i, 1);
-              beep(100, 0.2, 'sawtooth', 0.3);
             }
             // 誘導弾 (MoaiThrow_Homing) 専用の画面外削除ロジック
             else if (s.type === 'MoaiThrow_Homing' && (s.x < player.x - 100 || s.y > G.H + 50 || s.y < -50)) {
@@ -1662,25 +1720,7 @@
             }
           }
 
-          // Game Over (省略)
-          // Game Over Check
-          if (lives <= 0) {
-            state = 'OVER';
-            stopBgm(); // Ensure sound stops
-
-            // Update High Score
-            best = Math.max(best, score);
-
-            // Show Game Over Overlay
-            const overScreen = document.getElementById('over');
-            document.getElementById('overTitle').textContent = 'GAME OVER';
-            document.getElementById('scoreline').textContent = `SCORE: ${score} / BEST: ${best}`;
-            overScreen.style.display = 'flex';
-
-            // Auto-redirect to Title after 3 seconds (User requested "Return to Start Screen")
-            // Or wait for click. Let's keep the button but adding a safeguard or auto-transition might be nice?
-            // User said "Return to Start Screen". Let's enable the click to work.
-          }
+          // Note: Game Over check is now handled inside damagePlayer()
 
           // Update UI (省略)
           scEl.textContent = score;

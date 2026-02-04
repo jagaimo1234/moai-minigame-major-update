@@ -1165,10 +1165,10 @@
 
           ctx.textAlign = 'center';
           ctx.fillStyle = '#111827';
-          ctx.font = '24px monospace';
+          ctx.font = '24px "Press Start 2P"';
           ctx.fillText('STAGE CLEAR!', G.W / 2, G.H / 2 - 10);
 
-          ctx.font = '16px monospace';
+          ctx.font = '16px "Press Start 2P"';
           ctx.fillText(`SCORE: ${score}`, G.W / 2, G.H / 2 + 20);
         }
 
@@ -1202,7 +1202,7 @@
           if (phase > 0.1 && phase < 0.8) {
             ctx.textAlign = 'center';
             ctx.fillStyle = '#e6f0ff';
-            ctx.font = '20px monospace';
+            ctx.font = '20px "Press Start 2P"';
             ctx.fillText(`STAGE ${nextStageIndex + 1}: ${nextName}`, G.W / 2, G.H / 2 + 6);
           }
         }
@@ -1224,10 +1224,10 @@
           const alpha = Math.sin(Math.min(1, t / duration) * Math.PI);
           ctx.globalAlpha = alpha;
 
-          ctx.font = '24px monospace';
+          ctx.font = '24px "Press Start 2P"';
           ctx.fillText(`STAGE ${stageNum}: ${stageName}`, G.W / 2, G.H / 2 - 25);
 
-          ctx.font = '16px monospace';
+          ctx.font = '10px "Press Start 2P"';
           ctx.fillText(`THEME: ${stageTheme}`, G.W / 2, G.H / 2 + 15);
 
           ctx.globalAlpha = 1; // 元に戻す
@@ -1249,7 +1249,7 @@
 
           ctx.textAlign = 'center';
           ctx.fillStyle = '#fff';
-          ctx.font = '10px monospace';
+          ctx.font = '10px "Press Start 2P"';
 
           ctx.strokeStyle = '#000';
           ctx.lineWidth = 2;

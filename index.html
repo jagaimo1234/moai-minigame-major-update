@@ -19,7 +19,7 @@
       height: 100%;
       background: var(--bg);
       color: var(--fg);
-      font-family: system-ui, -apple-system, Segoe UI, Arial, sans-serif
+      font-family: 'Press Start 2P', monospace;
     }
 
     #wrap {
@@ -1885,7 +1885,7 @@
               ctx.fillRect(0, 0, G.W, G.H);
 
               // ★ エンドロール描画ロジックの実行
-              ctx.font = '12px monospace';
+              ctx.font = '12px "Press Start 2P"';
               ctx.textAlign = 'center';
 
               const textHeight = 20;
@@ -1915,13 +1915,13 @@
 
                     // スタイル設定（YOGURTLOVE専用）
                     ctx.fillStyle = `rgba(255, 215, 0, ${goldFlash})`; // 金色に点滅
-                    ctx.font = '16px monospace';
+                    ctx.font = '16px "Press Start 2P"';
                     ctx.lineWidth = 3;
                     ctx.strokeStyle = `rgba(255, 215, 0, 0.5)`;
                   } else {
                     // デフォルトスタイルに戻す
                     ctx.fillStyle = '#fff';
-                    ctx.font = '12px monospace';
+                    ctx.font = '12px "Press Start 2P"';
                     ctx.lineWidth = 1;
                     ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
                   }

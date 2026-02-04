@@ -1202,8 +1202,9 @@
           if (phase > 0.1 && phase < 0.8) {
             ctx.textAlign = 'center';
             ctx.fillStyle = '#e6f0ff';
-            ctx.font = '12px "Press Start 2P"';
-            ctx.fillText(`STAGE ${nextStageIndex + 1}: ${nextName}`, G.W / 2, G.H / 2 + 6);
+            ctx.font = '16px "Press Start 2P"';
+            ctx.fillText(`STAGE ${nextStageIndex + 1}`, G.W / 2, G.H / 2 - 10);
+            ctx.fillText(nextName, G.W / 2, G.H / 2 + 15);
           }
         }
 
@@ -1224,8 +1225,9 @@
           const alpha = Math.sin(Math.min(1, t / duration) * Math.PI);
           ctx.globalAlpha = alpha;
 
-          ctx.font = '14px "Press Start 2P"';
-          ctx.fillText(`STAGE ${stageNum}: ${stageName}`, G.W / 2, G.H / 2 - 25);
+          ctx.font = '16px "Press Start 2P"';
+          ctx.fillText(`STAGE ${stageNum}`, G.W / 2, G.H / 2 - 35);
+          ctx.fillText(stageName, G.W / 2, G.H / 2 - 10);
 
           ctx.font = '10px "Press Start 2P"';
           ctx.fillText(`THEME: ${stageTheme}`, G.W / 2, G.H / 2 + 15);

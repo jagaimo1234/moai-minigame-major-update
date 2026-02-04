@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>Moai Robo — Yogurt Run EX (Final Edition)</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #0b1020;
@@ -19,7 +19,7 @@
       height: 100%;
       background: var(--bg);
       color: var(--fg);
-      font-family: 'Press Start 2P', monospace;
+      font-family: 'Press Start 2P', 'DotGothic16', monospace;
     }
 
     #wrap {
@@ -54,7 +54,7 @@
       color: #FFD700;
       /* Gold */
       padding: 10px 10px 16px 10px;
-      font-family: 'Press Start 2P', monospace;
+      font-family: 'Press Start 2P', 'DotGothic16', monospace;
       z-index: 10;
       display: flex;
       flex-direction: column;
@@ -241,7 +241,7 @@
       border: 1px solid #374151;
       border-radius: 12px;
       padding: 6px 10px;
-      font: 12px/1 system-ui, monospace
+      font: 12px/1 'Press Start 2P', 'DotGothic16', monospace
     }
   </style>
 </head>
@@ -1165,10 +1165,10 @@
 
           ctx.textAlign = 'center';
           ctx.fillStyle = '#111827';
-          ctx.font = '16px "Press Start 2P"';
+          ctx.font = '16px "Press Start 2P", "DotGothic16"';
           ctx.fillText('STAGE CLEAR!', G.W / 2, G.H / 2 - 10);
 
-          ctx.font = '10px "Press Start 2P"';
+          ctx.font = '10px "Press Start 2P", "DotGothic16"';
           ctx.fillText(`SCORE: ${score}`, G.W / 2, G.H / 2 + 20);
         }
 
@@ -1202,7 +1202,7 @@
           if (phase > 0.1 && phase < 0.8) {
             ctx.textAlign = 'center';
             ctx.fillStyle = '#e6f0ff';
-            ctx.font = '16px "Press Start 2P"';
+            ctx.font = '16px "Press Start 2P", "DotGothic16"';
             ctx.fillText(`STAGE ${nextStageIndex + 1}`, G.W / 2, G.H / 2 - 10);
             ctx.fillText(nextName, G.W / 2, G.H / 2 + 15);
           }
@@ -1225,11 +1225,11 @@
           const alpha = Math.sin(Math.min(1, t / duration) * Math.PI);
           ctx.globalAlpha = alpha;
 
-          ctx.font = '16px "Press Start 2P"';
+          ctx.font = '16px "Press Start 2P", "DotGothic16"';
           ctx.fillText(`STAGE ${stageNum}`, G.W / 2, G.H / 2 - 35);
           ctx.fillText(stageName, G.W / 2, G.H / 2 - 10);
 
-          ctx.font = '10px "Press Start 2P"';
+          ctx.font = '10px "Press Start 2P", "DotGothic16"';
           ctx.fillText(`THEME: ${stageTheme}`, G.W / 2, G.H / 2 + 15);
 
           ctx.globalAlpha = 1; // 元に戻す
@@ -1251,7 +1251,7 @@
 
           ctx.textAlign = 'center';
           ctx.fillStyle = '#fff';
-          ctx.font = '10px "Press Start 2P"';
+          ctx.font = '10px "Press Start 2P", "DotGothic16"';
 
           ctx.strokeStyle = '#000';
           ctx.lineWidth = 2;
@@ -1431,12 +1431,12 @@
 
           // "GAME OVER"
           ctx.fillStyle = '#FF0000'; // Red
-          ctx.font = '20px "Press Start 2P"';
+          ctx.font = '20px "Press Start 2P", "DotGothic16"';
           ctx.fillText('GAME OVER', G.W / 2, G.H / 2 - 20);
 
           // Score
           ctx.fillStyle = '#fff';
-          ctx.font = '12px "Press Start 2P"';
+          ctx.font = '12px "Press Start 2P", "DotGothic16"';
           ctx.fillText(`SCORE: ${score}`, G.W / 2, G.H / 2 + 10);
           ctx.fillText(`BEST: ${best}`, G.W / 2, G.H / 2 + 25);
 
@@ -1887,7 +1887,7 @@
               ctx.fillRect(0, 0, G.W, G.H);
 
               // ★ エンドロール描画ロジックの実行
-              ctx.font = '12px "Press Start 2P"';
+              ctx.font = '12px "Press Start 2P", "DotGothic16"';
               ctx.textAlign = 'center';
 
               const textHeight = 20;
@@ -1917,13 +1917,13 @@
 
                     // スタイル設定（YOGURTLOVE専用）
                     ctx.fillStyle = `rgba(255, 215, 0, ${goldFlash})`; // 金色に点滅
-                    ctx.font = '16px "Press Start 2P"';
+                    ctx.font = '16px "Press Start 2P", "DotGothic16"';
                     ctx.lineWidth = 3;
                     ctx.strokeStyle = `rgba(255, 215, 0, 0.5)`;
                   } else {
                     // デフォルトスタイルに戻す
                     ctx.fillStyle = '#fff';
-                    ctx.font = '12px "Press Start 2P"';
+                    ctx.font = '12px "Press Start 2P", "DotGothic16"';
                     ctx.lineWidth = 1;
                     ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
                   }

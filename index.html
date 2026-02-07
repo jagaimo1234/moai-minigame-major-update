@@ -243,11 +243,6 @@
       padding: 6px 10px;
       font: 12px/1 'Press Start 2P', 'DotGothic16', monospace
     }
-
-    #game {
-      position: relative;
-      /* For absolute positioning of overlay */
-    }
   </style>
 </head>
 
@@ -255,11 +250,7 @@
   <div id="wrap">
       <div id="game">
           <canvas id="cv" width="180" height="320"></canvas>
-      <!-- ★ Boss High-Res Overlay -->
-      <img id="boss-overlay" src="boss_author.png"
-        style="display:none; position:absolute; top:0; left:0; pointer-events:none; z-index:10; image-rendering:auto;">
-       
-    </div>
+        </div>
 
     <div id="hud">
       <div id="hud-top">
@@ -431,7 +422,7 @@
         const ctx = cv.getContext('2d');
 
         function fitCanvas() {
-          const dpr = 1; // Force 1.0 for performance
+          const dpr = Math.min(2, window.devicePixelRatio || 1); // Increased cap to 2.0 for better visual quality
           const scale = Math.floor(Math.min(innerWidth / G.W, innerHeight / G.H) * dpr);
           cv.width = G.W * scale;
           cv.height = G.H * scale;
@@ -1194,44 +1185,14 @@
             }
           }
 
-          // ★ Implement DOM Overlay for High-Res Rendering ★
-          const bossEl = document.getElementById('boss-overlay');
-          if (bossEl) {
-            bossEl.style.display = 'block';
-
-            // Only update src if changed to avoid flicker
-            const targetSrc = currentImg.src;
-            if (bossEl.src !== targetSrc) {
-              bossEl.src = targetSrc;
-            }
-
-            // Sync position with Canvas
-            // G.W=180, G.H=320. DOM size depends on fitCanvas scaling.
-            // cv.clientWidth is the CSS width.
-            const scale = cv.clientWidth / G.W;
-
-            // Calc screen coords
-            // Canvas drawX/Y are relative to center (translate(x,y))
-            // x, y are boss center coordinates in logical space
-            // Draw origin is top-left of sprite
-            const logicalLeft = x - fw / 2;
-            const logicalTop = y - fh / 2;
-
-            bossEl.style.width = (fw * scale) + 'px';
-            bossEl.style.height = (fh * scale) + 'px';
-            bossEl.style.transform = `translate(${logicalLeft * scale}px, ${logicalTop * scale}px)`;
-          }
-
-          /* 
-          // REMOVED CANVAS DRAWING FOR BOSS (Using DOM Overlay)
           const drawX = -fw / 2;
           const drawY = -fh / 2;
+
           ctx.drawImage(
             currentImg,
             0, 0, currentImg.width, currentImg.height,
             drawX, drawY, fw, fh
           );
-          */
 
           // Charge Effect Overlay (Keep existing particle effect if charging)
           if (boss.isCharging) {
@@ -1985,10 +1946,6 @@
             // ★ ボス名タグの描画
             if (state === 'PLAY' && currentStage.boss && boss.active) {
               drawBossNameTag();
-            } else {
-              // Ensure boss overlay is hidden if not active
-              const bossEl = document.getElementById('boss-overlay');
-              if (bossEl) bossEl.style.display = 'none';
             }
 
 

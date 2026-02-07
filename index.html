@@ -990,21 +990,16 @@
           const w = 32; // Sprite base width
           const h = 48; // Sprite base height (scaled down closer to 16x24 logic if needed, but keeping it visible)
 
-          // Use the loaded sprite
-          ctx.save();
-
-          // High score item (Strawberry Milk) -> Red Tint
+          // Aura for special items (Replacing ctx.filter which is heavy/unreliable)
           if (it.score === 20) {
-            ctx.filter = 'hue-rotate(140deg) brightness(1.2)'; // Blue -> Pink/Red
-          }
-          // Heal item -> Golden Tint
-          else if (it.heal) {
-            ctx.filter = 'sepia(1) saturate(3) brightness(1.3)'; // Gold
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.5)'; // Red Aura for Strawberry
+            ctx.beginPath(); ctx.arc(x + 16, y + 16, 16, 0, Math.PI * 2); ctx.fill();
+          } else if (it.heal) {
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.5)'; // Gold Aura for Heal
+            ctx.beginPath(); ctx.arc(x + 16, y + 16, 16, 0, Math.PI * 2); ctx.fill();
           }
 
           ctx.drawImage(yogurtImage, 0, 0, yogurtImage.width, yogurtImage.height, x, y, 32, 32);
-
-          ctx.restore();
         }
 
 

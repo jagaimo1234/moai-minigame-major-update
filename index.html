@@ -1216,6 +1216,41 @@
           ctx.fillRect(barX, barY, barW * hpRate, barH); // HP
 
           ctx.restore();
+
+          // ★ Shout (Speech Bubble)
+          if (boss.shout && boss.shoutTimer > 0) {
+            ctx.save();
+            ctx.font = '10px "Press Start 2P", "DotGothic16"';
+            const tm = ctx.measureText(boss.shout);
+            const tw = tm.width + 10;
+            const th = 16;
+            const sx = boss.x - tw - 20; // 20px left of boss
+            const sy = boss.y - 30;     // above boss
+
+            // Simple Bubble Box
+            ctx.fillStyle = '#fff';
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 1;
+
+            ctx.beginPath();
+            ctx.rect(sx, sy, tw, th);
+            ctx.fill();
+            ctx.stroke();
+
+            // Tail
+            ctx.beginPath();
+            ctx.moveTo(sx + tw, sy + 10);
+            ctx.lineTo(sx + tw + 5, sy + 14);
+            ctx.lineTo(sx + tw, sy + 18);
+            ctx.fill();
+            ctx.stroke();
+
+            // Text
+            ctx.fillStyle = '#000';
+            ctx.textAlign = 'center';
+            ctx.fillText(boss.shout, sx + tw / 2, sy + 11);
+            ctx.restore();
+          }
         }
 
         // ★ ボス名タグの描画関数

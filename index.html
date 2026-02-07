@@ -505,7 +505,36 @@
         const yogurtImage = new Image();
         yogurtImage.src = 'item_yogurt.png';
         let yogurtImageLoaded = false;
-        yogurtImage.onload = () => { yogurtImageLoaded = true; };
+
+        // Pre-tinted versions for performance & compatibility
+        let yogurtRedCanvas = null;
+        let yogurtGoldCanvas = null;
+
+        yogurtImage.onload = () => {
+          yogurtImageLoaded = true;
+
+          // Generate Red (Strawberry)
+          yogurtRedCanvas = document.createElement('canvas');
+          yogurtRedCanvas.width = yogurtImage.width;
+          yogurtRedCanvas.height = yogurtImage.height;
+          const ctxR = yogurtRedCanvas.getContext('2d');
+          ctxR.drawImage(yogurtImage, 0, 0);
+          ctxR.globalCompositeOperation = 'source-atop';
+          ctxR.fillStyle = 'rgba(255, 0, 0, 0.6)'; // Red tint
+          ctxR.fillRect(0, 0, yogurtImage.width, yogurtImage.height);
+          ctxR.globalCompositeOperation = 'source-over';
+
+          // Generate Gold (Heal)
+          yogurtGoldCanvas = document.createElement('canvas');
+          yogurtGoldCanvas.width = yogurtImage.width;
+          yogurtGoldCanvas.height = yogurtImage.height;
+          const ctxG = yogurtGoldCanvas.getContext('2d');
+          ctxG.drawImage(yogurtImage, 0, 0);
+          ctxG.globalCompositeOperation = 'source-atop';
+          ctxG.fillStyle = 'rgba(255, 215, 0, 0.6)'; // Gold tint
+          ctxG.fillRect(0, 0, yogurtImage.width, yogurtImage.height);
+          ctxG.globalCompositeOperation = 'source-over';
+        };
         yogurtImage.onerror = () => { console.error("Error loading item_yogurt.png."); };
 
         // ★ NEW BACKGROUND SPRITES
@@ -990,16 +1019,22 @@
           const w = 32; // Sprite base width
           const h = 48; // Sprite base height (scaled down closer to 16x24 logic if needed, but keeping it visible)
 
-          // Aura for special items (Replacing ctx.filter which is heavy/unreliable)
-          if (it.score === 20) {
-            ctx.fillStyle = 'rgba(255, 0, 0, 0.5)'; // Red Aura for Strawberry
-            ctx.beginPath(); ctx.arc(x + 16, y + 16, 16, 0, Math.PI * 2); ctx.fill();
-          } else if (it.heal) {
-            ctx.fillStyle = 'rgba(255, 215, 0, 0.5)'; // Gold Aura for Heal
-            ctx.beginPath(); ctx.arc(x + 16, y + 16, 16, 0, Math.PI * 2); ctx.fill();
+          // Use the loaded sprite
+          ctx.save();
+
+          let drawImg = yogurtImage;
+          // High score item (Strawberry Milk) -> Red Tint
+          if (it.score === 20 && yogurtRedCanvas) {
+            drawImg = yogurtRedCanvas;
+          }
+          // Heal item -> Golden Tint
+          else if (it.heal && yogurtGoldCanvas) {
+            drawImg = yogurtGoldCanvas;
           }
 
-          ctx.drawImage(yogurtImage, 0, 0, yogurtImage.width, yogurtImage.height, x, y, 32, 32);
+          ctx.drawImage(drawImg, 0, 0, drawImg.width, drawImg.height, x, y, 32, 32);
+
+          ctx.restore();
         }
 
 

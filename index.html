@@ -1117,6 +1117,7 @@
 
           ctx.save();
           ctx.translate(x, y);
+          ctx.imageSmoothingEnabled = true; // Use smooth scaling for high-res boss images
 
           let currentImg = authorImage;
           let fw = 32; // Default width

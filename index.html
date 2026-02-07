@@ -449,6 +449,16 @@
         authorImage.onload = () => { authorImageLoaded = true; };
         authorImage.onerror = () => { console.error("Error loading boss_author.png. Check file path."); };
 
+        const authorChargeImage = new Image();
+        authorChargeImage.src = 'boss_author_charge.png';
+        let authorChargeImageLoaded = false;
+        authorChargeImage.onload = () => { authorChargeImageLoaded = true; };
+
+        const authorAttackImage = new Image();
+        authorAttackImage.src = 'boss_author_attack.png';
+        let authorAttackImageLoaded = false;
+        authorAttackImage.onload = () => { authorAttackImageLoaded = true; };
+
         const moaiShotImage = new Image();
         moaiShotImage.src = 'moai_shot.png';
         let moaiShotImageLoaded = false;
@@ -1100,7 +1110,7 @@
           ctx.drawImage(workImage, 0, 0, workImage.width, workImage.height, x - frameWidth / 2, y - frameHeight, frameWidth, frameHeight);
         }
 
-        function drawBoss() { /* 省略 */
+        function drawBoss() {
           if (!boss.active || !authorImageLoaded) return;
           const x = boss.x;
           const y = boss.y + Math.sin(t * 0.05) * 4;
@@ -1108,22 +1118,52 @@
           ctx.save();
           ctx.translate(x, y);
 
-          const frameWidth = 32;
-          const frameHeight = 50;
-          const drawX = -frameWidth / 2;
-          const drawY = -frameHeight / 2;
+          let currentImg = authorImage;
+          let fw = 32; // Default width
+          const fh = 50;
+
+          // Animation Logic
+          const attackType = BOSS_ATTACKS[boss.attackIndex];
+          const bt = boss.attackTimer;
+
+          // 1. Charge State
+          if (boss.isCharging && authorChargeImageLoaded) {
+            currentImg = authorChargeImage;
+          }
+          // 2. Attack State (Transient)
+          else if (authorAttackImageLoaded) {
+            let isAttacking = false;
+            if (attackType === 'MoaiThrow_Arc') {
+              // Fires at intervals. Show throw frame briefly.
+              if (bt % 80 < 20 && bt > 160) isAttacking = true;
+            } else if (attackType === 'MoaiThrow_Horizontal') {
+              // Rapid fire
+              if (bt % 30 < 10 && bt > 60) isAttacking = true;
+            } else if (attackType === 'MoaiThrow_Homing') {
+              // Throw once at 240
+              if (bt > 220 && bt <= 240) isAttacking = true;
+            }
+
+            if (isAttacking) {
+              currentImg = authorAttackImage;
+              fw = 48; // Attack sprite is likely wider
+            }
+          }
+
+          const drawX = -fw / 2;
+          const drawY = -fh / 2;
 
           ctx.drawImage(
-            authorImage,
-            0, 0, authorImage.width, authorImage.height,
-            drawX, drawY, frameWidth, frameHeight
+            currentImg,
+            0, 0, currentImg.width, currentImg.height,
+            drawX, drawY, fw, fh
           );
 
-          // 攻撃前のチャージ演出
+          // Charge Effect Overlay (Keep existing particle effect if charging)
           if (boss.isCharging) {
             ctx.fillStyle = (t % 10 < 5) ? '#ff0000' : '#ffaa00';
             ctx.beginPath();
-            ctx.arc(0, 0, 10 + Math.sin(t * 0.5) * 2, 0, 6.28);
+            ctx.arc(0, -20, 10 + Math.sin(t * 0.5) * 2, 0, 6.28); // Position adjusted to held object
             ctx.fill();
           }
 

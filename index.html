@@ -505,30 +505,18 @@
         const yogurtImage = new Image();
         yogurtImage.src = 'item_yogurt.png';
         let yogurtImageLoaded = false;
-        let yogurtRedCanvas = null;
-        let yogurtGoldCanvas = null;
-
-        function createTintedCanvas(img, color) {
-          const c = document.createElement('canvas');
-          c.width = img.width; c.height = img.height;
-          const cx = c.getContext('2d');
-          cx.drawImage(img, 0, 0);
-          cx.globalCompositeOperation = 'hue';
-          cx.fillStyle = color;
-          cx.fillRect(0, 0, c.width, c.height);
-          cx.globalCompositeOperation = 'destination-in';
-          cx.drawImage(img, 0, 0);
-          return c;
-        }
-
-        yogurtImage.onload = () => {
-          yogurtImageLoaded = true;
-          try {
-            yogurtRedCanvas = createTintedCanvas(yogurtImage, '#ff0000');
-            yogurtGoldCanvas = createTintedCanvas(yogurtImage, '#eab308'); // Darker Gold/Yellow
-          } catch (e) { console.error(e); }
-        };
+        yogurtImage.onload = () => { yogurtImageLoaded = true; };
         yogurtImage.onerror = () => { console.error("Error loading item_yogurt.png."); };
+
+        const yogurt2Image = new Image();
+        yogurt2Image.src = 'item_yogurt2.png';
+        let yogurt2ImageLoaded = false;
+        yogurt2Image.onload = () => { yogurt2ImageLoaded = true; };
+
+        const yogurt3Image = new Image();
+        yogurt3Image.src = 'item_yogurt3.png';
+        let yogurt3ImageLoaded = false;
+        yogurt3Image.onload = () => { yogurt3ImageLoaded = true; };
 
         // ★ NEW BACKGROUND SPRITES
         const bgSkyImage = new Image();
@@ -1009,23 +997,16 @@
 
           const x = (it.x - 8) | 0; // Center texturing
           const y = (it.y - 30) | 0;
-          const w = 32; // Sprite base width
-          const h = 48; // Sprite base height (scaled down closer to 16x24 logic if needed, but keeping it visible)
 
-          // Use the loaded sprite
-          // High score item (Strawberry Milk) -> Red Tint
-          if (it.score === 20 && yogurtRedCanvas) {
-            ctx.drawImage(yogurtRedCanvas, 0, 0, 32, 32, x, y, 32, 32);
+          // Select Image
+          let useImg = yogurtImage;
+          if (it.score === 20 && yogurt2ImageLoaded) {
+            useImg = yogurt2Image; // Red (Strawberry)
+          } else if (it.heal && yogurt3ImageLoaded) {
+            useImg = yogurt3Image; // Yellow (Heal)
           }
-          // Heal item -> Golden Tint
-          else if (it.heal && yogurtGoldCanvas) {
-            ctx.drawImage(yogurtGoldCanvas, 0, 0, 32, 32, x, y, 32, 32);
-          }
-          // Normal
-          else {
-            ctx.drawImage(yogurtImage, 0, 0, 32, 32, x, y, 32, 32);
-          }
-          // No restore needed as we didn't save/filter
+
+          ctx.drawImage(useImg, 0, 0, useImg.width, useImg.height, x, y, 32, 32);
         }
 
 

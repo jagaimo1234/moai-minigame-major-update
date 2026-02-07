@@ -655,22 +655,25 @@
         // ★ CREDITSに秘密のコードの演出行を追加
         const CREDITS = [
           "CONGRATULATIONS!", "",
-          "MOAI ROBO - YOGURT RUN EX", "",
+          "MOAI ROBO",
+          "- YOGURT RUN EX -", "",
           "--- CAST ---",
           "Hero: MOAI ROBO",
           "Villain: THE AUTHOR",
-          "Items: YOGURT, STRAWBERRY MILK", "",
+          "Items: YOGURT",
+          "& STRAWBERRY MILK", "",
           "--- SPECIAL THANKS ---",
           "Kanazawa Moai Project",
           "AND YOU!", "",
-          "--- 秘密のアクセスコード ---", // 12行目 (Index 11)
-          "YOGURTLOVE", // 13行目 (Index 12)
-          "これは、未来の冒険を解放する鍵です。", // 14行目 (Index 13)
-          "大切に保管してください...", // 15行目 (Index 14)
+          "--- 秘密のアクセスコード ---", // 12行目 -> Index 14 (Shifted)
+          "YOGURTLOVE", // 13行目 -> Index 15
+          "これは、未来の冒険を",
+          "解放する鍵です。",
+          "大切に保管してください...",
           "",
           "Thank you for playing."
         ];
-        const SECRET_CODE_START_INDEX = 11; // 停止を開始する行 (--- 秘密のアクセスコード ---)
+        const SECRET_CODE_START_INDEX = 14; // 停止を開始する行 (--- 秘密のアクセスコード ---)
         const SECRET_CODE_DURATION = 180; // 停止時間 (3秒)
 
         // HUD Elements (省略)
@@ -1940,7 +1943,7 @@
               ctx.fillRect(0, 0, G.W, G.H);
 
               // ★ エンドロール描画ロジックの実行
-              ctx.font = '8px "Press Start 2P"'; // Reduced from 12px for mobile fit
+              ctx.font = '8px "Press Start 2P", "DotGothic16"'; // Added Japanese fallback
               ctx.textAlign = 'center';
 
               const textHeight = 16;
@@ -1964,19 +1967,19 @@
 
                 if (y > -textHeight && y < G.H + textHeight) { // 画面内にあるかチェック
 
-                  // ★★★ YOGURTLOVE の行 (Index 14) のみ強調されるように修正 ★★★
-                  if (i === 14) {
+                  // ★★★ YOGURTLOVE の行 (Index 15) のみ強調されるように修正 ★★★
+                  if (i === 15) {
                     const goldFlash = (Math.sin(t * 0.2) * 0.5) + 0.5;
 
                     // スタイル設定（YOGURTLOVE専用）
                     ctx.fillStyle = `rgba(255, 215, 0, ${goldFlash})`; // 金色に点滅
-                    ctx.font = '10px "Press Start 2P"'; // Reduced from 16px
+                    ctx.font = '10px "Press Start 2P", "DotGothic16"';
                     ctx.lineWidth = 3;
                     ctx.strokeStyle = `rgba(255, 215, 0, 0.5)`;
                   } else {
                     // デフォルトスタイルに戻す
                     ctx.fillStyle = '#fff';
-                    ctx.font = '8px "Press Start 2P"';
+                    ctx.font = '8px "Press Start 2P", "DotGothic16"';
                     ctx.lineWidth = 1;
                     ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
                   }

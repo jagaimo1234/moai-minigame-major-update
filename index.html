@@ -673,7 +673,7 @@
           "",
           "Thank you for playing."
         ];
-        const SECRET_CODE_START_INDEX = 14; // 停止を開始する行 (--- 秘密のアクセスコード ---)
+        const SECRET_CODE_START_INDEX = 15; // 停止を開始する行 (--- 秘密のアクセスコード ---)
         const SECRET_CODE_DURATION = 180; // 停止時間 (3秒)
 
         // HUD Elements (省略)
@@ -1967,8 +1967,8 @@
 
                 if (y > -textHeight && y < G.H + textHeight) { // 画面内にあるかチェック
 
-                  // ★★★ YOGURTLOVE の行 (Index 15) のみ強調されるように修正 ★★★
-                  if (i === 15) {
+                  // ★★★ YOGURTLOVE の行 (Index 16) のみ強調されるように修正 ★★★
+                  if (line.trim() === "YOGURTLOVE") {
                     const goldFlash = (Math.sin(t * 0.2) * 0.5) + 0.5;
 
                     // スタイル設定（YOGURTLOVE専用）

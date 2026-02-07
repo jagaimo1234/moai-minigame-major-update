@@ -645,7 +645,8 @@
         const boss = {
           active: false, x: G.W - 30, y: G.GROUND - 40, hp: BOSS_MAX_HP, timer: 0, dir: 1,
           attackIndex: 0, attackTimer: 180,
-          isCharging: false, beamWidth: 0
+          isCharging: false, beamWidth: 0,
+          shout: null, shoutTimer: 0
         };
         const bossShots = [];
         const bullets = [];
@@ -1442,6 +1443,9 @@
 
             bossShots.push({ x: bx, y: by, vx: vx, vy: vy, type: attackType, gravity: 0.2 });
             beep(150, 0.1, 'sawtooth', 0.1);
+            // Shout logic
+            boss.shout = "くらえ！！";
+            boss.shoutTimer = 60; // 1 second
           }
 
           // 攻撃パターン 2: MoaiThrow_Horizontal (水平連射)
@@ -1455,6 +1459,12 @@
               const vy = Math.sin(angle) * speed * 0.2;
               bossShots.push({ x: bx, y: shootY, vx: vx, vy: vy, type: attackType, gravity: 0 });
               beep(800, 0.03, 'sine', 0.1);
+
+              // Shout on first shot of the barrage (approx)
+              if (boss.attackTimer > 270) {
+                boss.shout = "くらえ！！";
+                boss.shoutTimer = 60;
+              }
             }
 
             if (boss.attackTimer === 300) boss.isCharging = true;

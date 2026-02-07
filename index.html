@@ -1170,12 +1170,19 @@
             ctx.fill();
           }
 
-          ctx.restore();
-
+          // ★ Boss HP Bar (Above Head)
           const hpRate = Math.max(0, boss.hp) / BOSS_MAX_HP;
-          const bw = 120;
-          ctx.fillStyle = '#000'; ctx.fillRect(G.W / 2 - bw / 2, 8, bw, 8);
-          ctx.fillStyle = '#dc2626'; ctx.fillRect(G.W / 2 - bw / 2, 8, bw * hpRate, 8);
+          const barW = 40;
+          const barH = 4;
+          const barX = -barW / 2;
+          const barY = -fh / 2 - 10; // 10px above sprite
+
+          ctx.fillStyle = '#111';
+          ctx.fillRect(barX - 1, barY - 1, barW + 2, barH + 2); // Border
+          ctx.fillStyle = '#dc2626';
+          ctx.fillRect(barX, barY, barW * hpRate, barH); // HP
+
+          ctx.restore();
         }
 
         // ★ ボス名タグの描画関数

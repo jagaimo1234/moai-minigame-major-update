@@ -1865,16 +1865,20 @@
             // Draw Shadows & Obstacles
             obstacles.forEach(d => {
               // Shadow Logic
+              // Shadow Logic
               let sw = 0;
-              if (d.type === 'Insect' || d.type === 'DiveInsect') sw = 8;
-              else if (d.type === 'Tax') sw = 18;
-              else if (d.type === 'Anxiety') sw = 10;
-              else if (d.type === 'Company') sw = 16;
-              else if (d.type === 'Meeting' || d.type === 'Work') sw = 20;
-              else if (d.type === 'Celery') sw = 14;
+              let showShadow = false;
 
-              if (sw > 0 && d.type !== 'Work') drawShadow(d.x, G.GROUND, sw);
-              if (d.type === 'Work') drawShadow(d.x, G.GROUND, 16);
+              if (d.type === 'Insect' || d.type === 'DiveInsect') { sw = 8; showShadow = insectImageLoaded; }
+              else if (d.type === 'Tax') { sw = 18; showShadow = slimeImageLoaded; }
+              else if (d.type === 'Anxiety') { sw = 10; showShadow = anxietyImageLoaded; }
+              else if (d.type === 'Company') { sw = 16; showShadow = companyImageLoaded; }
+              else if (d.type === 'Meeting') { sw = 20; showShadow = meetingImageLoaded; }
+              else if (d.type === 'Work') { sw = 20; showShadow = workImageLoaded; } // Work special case handled below
+              else if (d.type === 'Celery') { sw = 14; showShadow = celeryImageLoaded; }
+
+              if (sw > 0 && d.type !== 'Work' && showShadow) drawShadow(d.x, G.GROUND, sw);
+              if (d.type === 'Work' && showShadow) drawShadow(d.x, G.GROUND, 16);
 
               if (d.type === 'Insect' || d.type === 'DiveInsect') drawInsect(d);
               else if (d.type === 'Tax') drawTax(d);

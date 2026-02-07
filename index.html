@@ -505,35 +505,28 @@
         const yogurtImage = new Image();
         yogurtImage.src = 'item_yogurt.png';
         let yogurtImageLoaded = false;
-
-        // Pre-tinted versions for performance & compatibility
         let yogurtRedCanvas = null;
         let yogurtGoldCanvas = null;
 
+        function createTintedCanvas(img, color) {
+          const c = document.createElement('canvas');
+          c.width = img.width; c.height = img.height;
+          const cx = c.getContext('2d');
+          cx.drawImage(img, 0, 0);
+          cx.globalCompositeOperation = 'hue';
+          cx.fillStyle = color;
+          cx.fillRect(0, 0, c.width, c.height);
+          cx.globalCompositeOperation = 'destination-in';
+          cx.drawImage(img, 0, 0);
+          return c;
+        }
+
         yogurtImage.onload = () => {
           yogurtImageLoaded = true;
-
-          // Generate Red (Strawberry)
-          yogurtRedCanvas = document.createElement('canvas');
-          yogurtRedCanvas.width = yogurtImage.width;
-          yogurtRedCanvas.height = yogurtImage.height;
-          const ctxR = yogurtRedCanvas.getContext('2d');
-          ctxR.drawImage(yogurtImage, 0, 0);
-          ctxR.globalCompositeOperation = 'source-atop';
-          ctxR.fillStyle = 'rgba(255, 0, 0, 0.6)'; // Red tint
-          ctxR.fillRect(0, 0, yogurtImage.width, yogurtImage.height);
-          ctxR.globalCompositeOperation = 'source-over';
-
-          // Generate Gold (Heal)
-          yogurtGoldCanvas = document.createElement('canvas');
-          yogurtGoldCanvas.width = yogurtImage.width;
-          yogurtGoldCanvas.height = yogurtImage.height;
-          const ctxG = yogurtGoldCanvas.getContext('2d');
-          ctxG.drawImage(yogurtImage, 0, 0);
-          ctxG.globalCompositeOperation = 'source-atop';
-          ctxG.fillStyle = 'rgba(255, 215, 0, 0.6)'; // Gold tint
-          ctxG.fillRect(0, 0, yogurtImage.width, yogurtImage.height);
-          ctxG.globalCompositeOperation = 'source-over';
+          try {
+            yogurtRedCanvas = createTintedCanvas(yogurtImage, '#ff0000');
+            yogurtGoldCanvas = createTintedCanvas(yogurtImage, '#eab308'); // Darker Gold/Yellow
+          } catch (e) { console.error(e); }
         };
         yogurtImage.onerror = () => { console.error("Error loading item_yogurt.png."); };
 
@@ -1020,21 +1013,19 @@
           const h = 48; // Sprite base height (scaled down closer to 16x24 logic if needed, but keeping it visible)
 
           // Use the loaded sprite
-          ctx.save();
-
-          let drawImg = yogurtImage;
           // High score item (Strawberry Milk) -> Red Tint
           if (it.score === 20 && yogurtRedCanvas) {
-            drawImg = yogurtRedCanvas;
+            ctx.drawImage(yogurtRedCanvas, 0, 0, 32, 32, x, y, 32, 32);
           }
           // Heal item -> Golden Tint
           else if (it.heal && yogurtGoldCanvas) {
-            drawImg = yogurtGoldCanvas;
+            ctx.drawImage(yogurtGoldCanvas, 0, 0, 32, 32, x, y, 32, 32);
           }
-
-          ctx.drawImage(drawImg, 0, 0, drawImg.width, drawImg.height, x, y, 32, 32);
-
-          ctx.restore();
+          // Normal
+          else {
+            ctx.drawImage(yogurtImage, 0, 0, 32, 32, x, y, 32, 32);
+          }
+          // No restore needed as we didn't save/filter
         }
 
 

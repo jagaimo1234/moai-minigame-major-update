@@ -422,7 +422,7 @@
         const ctx = cv.getContext('2d');
 
         function fitCanvas() {
-          const dpr = Math.min(1.5, window.devicePixelRatio || 1);
+          const dpr = 1; // Force 1.0 for performance
           const scale = Math.floor(Math.min(innerWidth / G.W, innerHeight / G.H) * dpr);
           cv.width = G.W * scale;
           cv.height = G.H * scale;
@@ -932,12 +932,11 @@
 
         // ★ Shadow Helper
         function drawShadow(x, y, w) {
-          ctx.save();
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+          ctx.fillStyle = 'rgba(0,0,0,0.3)';
           ctx.beginPath();
+          // Use ellipse to avoid save/restore/scale overhead
           ctx.ellipse(x, y, w, w * 0.3, 0, 0, Math.PI * 2);
           ctx.fill();
-          ctx.restore();
         }
 
         function drawMoai() {
@@ -1250,12 +1249,16 @@
           const yPos = d.y - yOffset;
 
           ctx.textAlign = 'center';
-          ctx.fillStyle = '#fff';
-          ctx.font = '10px "Press Start 2P", "DotGothic16"';
+          ctx.font = '10px "Press Start 2P"'; // "DotGothic16" removed for slight perf boost in tags, or keep if needed. keeping simple.
 
-          ctx.strokeStyle = '#000';
-          ctx.lineWidth = 2;
-          ctx.strokeText(name, d.x, yPos);
+          // Cheap shadow (offset draw) instead of expensive strokeText
+          ctx.fillStyle = '#000';
+          ctx.fillText(name, d.x + 1, yPos + 1);
+          ctx.fillText(name, d.x + 1, yPos - 1);
+          ctx.fillText(name, d.x - 1, yPos + 1);
+          ctx.fillText(name, d.x - 1, yPos - 1);
+
+          ctx.fillStyle = '#fff';
           ctx.fillText(name, d.x, yPos);
         }
 
